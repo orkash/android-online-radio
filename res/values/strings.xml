@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="app_name">Online Radio</string>
+    <string name="error_server">Сервер недоступен</string>
+    <string name="error_json">Не удалось проанализировать файл станций, возможно формат файла изменился</string>
+    <string name="error_io">Ошибка ввода-вывода, попробуйте обновить станции (Меню - Обновить станции)</string>
+    <string name="menu_update">Обновить станции</string>
+    <string name="menu_stop">Остановить проигрывание</string>
+</resources>

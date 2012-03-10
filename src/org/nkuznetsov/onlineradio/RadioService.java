@@ -61,7 +61,8 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	private void setState(int state)
 	{
 		STATE = state;
-		if (StateChangeListener != null) StateChangeListener.sendMessage(StateChangeListener.obtainMessage());
+		if (StateChangeListener != null) 
+			StateChangeListener.sendMessage(StateChangeListener.obtainMessage(RadioActivity.PLAYING_STATE_CHANGED_EVENT));
 	}
 	
 	public void registerCallStateBroadcastReceiver()

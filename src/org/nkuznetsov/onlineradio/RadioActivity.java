@@ -19,6 +19,8 @@ import org.nkuznetsov.onlineradio.exceptions.ServerErrorException;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -42,16 +44,15 @@ public class RadioActivity extends Activity implements OnChildClickListener
     private static final int RESULT_OK_READED = 1;
     private static final int RESULT_OK_DOWNLOADED = 2;
     private static final int RESULT_FAILED = 3;
-    private static final String EXTRA_MESSAGE = "message";
+    public static final int PLAYING_STATE_CHANGED_EVENT = 5548756;
     
 	private TextView message;
     private ProgressBar progress;
     private ExpandableListView list;
     
     private List<Station> stations;
-    private StationLoader thread;
     
-    //private ImageManager imageManager;
+    private StationLoader stationLoader;
     
 	@Override
     public void onCreate(Bundle savedInstanceState) 
@@ -59,43 +60,26 @@ public class RadioActivity extends Activity implements OnChildClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_radio);
         
-        //DownloadManager.cacheManager = new CacheManager(this);
-        //imageManager = new ImageManager(this, R.drawable.icon);
-        
         // get views
         message = (TextView) findViewById(R.id.activity_radio_message);
         progress = (ProgressBar) findViewById(R.id.activity_radio_progress);
         list = (ExpandableListView) findViewById(R.id.activity_radio_list);
-        
-        // hide all views
-        message.setVisibility(View.GONE);
-        progress.setVisibility(View.GONE);
-        list.setVisibility(View.GONE);
-        
-        progress.setVisibility(View.VISIBLE);
-        thread = new StationLoader(ACTION_ACTIVITY_START, new Callback());
-        thread.start();
     }
 	
 	@Override
 	protected void onResume() 
 	{
 		super.onResume();
+		loadStations(ACTION_ACTIVITY_START);
 		RadioService.StateChangeListener = new OnStateChangeListener();
 	}
 	
 	@Override
 	protected void onPause() 
 	{
+		cancelLoadStations();
 		RadioService.StateChangeListener = null;
 		super.onPause();
-	}
-	
-	@Override
-	protected void onDestroy() 
-	{
-		thread.requestStop();
-		super.onDestroy();
 	}
 	
 	private static final int UPDATE_STATIONS_ITEM_ID = 1;
@@ -115,13 +99,7 @@ public class RadioActivity extends Activity implements OnChildClickListener
 		switch (item.getItemId())
 		{
 			case UPDATE_STATIONS_ITEM_ID:
-				message.setVisibility(View.GONE);
-		        progress.setVisibility(View.GONE);
-		        list.setVisibility(View.GONE);
-		        
-		        progress.setVisibility(View.VISIBLE);
-				thread = new StationLoader(ACTION_UPDATE_LIST, new Callback());
-		        thread.start();
+				loadStations(ACTION_UPDATE_LIST);
 			case STOP_RADIO_ITEM_ID:
 				if (RadioService.STATE != RadioService.STATE_STOPPED)
 				{
@@ -154,63 +132,51 @@ public class RadioActivity extends Activity implements OnChildClickListener
 	}
 	
 	private class OnStateChangeListener extends Handler
-	{
+	{	
 		@Override
 		public void handleMessage(Message msg) 
 		{
-			((StationsAdapter)list.getExpandableListAdapter()).notifyDataSetChanged();
-		}
-	}
-	
-	private class Callback extends Handler
-	{
-		@Override
-		public void handleMessage(Message msg) 
-		{
-			if (msg.what == RESULT_OK_READED || msg.what == RESULT_OK_DOWNLOADED)
+			if (msg.what == PLAYING_STATE_CHANGED_EVENT)
 			{
-				progress.setVisibility(View.GONE);
-				message.setVisibility(View.GONE);
-				list.setVisibility(View.VISIBLE);
-				list.setAdapter(new StationsAdapter(RadioActivity.this, stations));
-				list.setOnChildClickListener(RadioActivity.this);
-			}
-			if (msg.what == RESULT_FAILED)
-			{
-				Bundle b = msg.getData();
-				progress.setVisibility(View.GONE);
-				list.setVisibility(View.GONE);
-				message.setVisibility(View.VISIBLE);
-				message.setText(b.getString(EXTRA_MESSAGE));
+				StationsAdapter adapter = ((StationsAdapter)list.getExpandableListAdapter());
+				if (adapter != null) adapter.notifyDataSetChanged();
 			}
 		}
 	}
 	
-	private class StationLoader extends Thread
+	private void loadStations(int action)
 	{
-		private Handler callback;
-		private int action;
-		private boolean requestStop;
+		StationLoader stationLoader = new StationLoader();
+		stationLoader.execute(action);
+	}
+	
+	private void cancelLoadStations()
+	{
+		if (stationLoader != null && stationLoader.getStatus() == Status.RUNNING) stationLoader.cancel(true);
+	}
+	
+	private class StationLoader extends AsyncTask<Integer, Void, Void>
+	{	
+		private int what = 0;
+		private String mes = "";
 		
-		public StationLoader(int action, Handler callback)
+		@Override
+		protected void onPreExecute() 
 		{
-			this.action = action;
-			this.callback = callback;
-			requestStop = false;
+			message.setVisibility(View.GONE);
+	        progress.setVisibility(View.GONE);
+	        list.setVisibility(View.GONE);
+	        progress.setVisibility(View.VISIBLE);
 		}
 		
 		@SuppressWarnings("unchecked")
 		@Override
-		public void run() 
+		protected Void doInBackground(Integer... params) 
 		{
-			Bundle b = new Bundle();
-			int what = 0;
-			String s = "";
-			
 			try 
 			{
 				File stationsFile = new File(getFilesDir(), SELIALIZE_TO_FILE);
-				if (action == ACTION_UPDATE_LIST)
+				if (params[0] == ACTION_UPDATE_LIST)
 				{
 					stationsFile.delete();
 				}
@@ -236,43 +202,54 @@ public class RadioActivity extends Activity implements OnChildClickListener
 			catch (BadGatewayException e) 
 			{
 				what = RESULT_FAILED;
-				s = getString(R.string.error_server);
+				mes = getString(R.string.error_server);
 			} 
 			catch (GatewayTimeoutException e) 
 			{
 				what = RESULT_FAILED;
-				s = getString(R.string.error_server);
+				mes = getString(R.string.error_server);
 			} 
 			catch (ServerErrorException e) 
 			{
 				what = RESULT_FAILED;
-				s = getString(R.string.error_server);
+				mes = getString(R.string.error_server);
 			} 
 			catch (IOException e) 
 			{
 				what = RESULT_FAILED;
-				s = getString(R.string.error_io);
+				mes = getString(R.string.error_io);
 			} 
 			catch (JSONException e) 
 			{
 				what = RESULT_FAILED;
-				s = getString(R.string.error_json);
+				mes = getString(R.string.error_json);
 			}
 			catch (ClassNotFoundException e) {}
 			
-			if (!requestStop)
-			{
-				Message message = callback.obtainMessage();
-				message.what = what;
-				b.putString(EXTRA_MESSAGE, s);
-				message.setData(b);
-				callback.sendMessage(message);
-			}
+			return null;
 		}
 		
-		public void requestStop()
+		@Override
+		protected void onPostExecute(Void result) 
 		{
-			requestStop = true;
+			if (!isCancelled())
+			{
+				if (what == RESULT_OK_READED || what == RESULT_OK_DOWNLOADED)
+				{
+					progress.setVisibility(View.GONE);
+					message.setVisibility(View.GONE);
+					list.setVisibility(View.VISIBLE);
+					list.setAdapter(new StationsAdapter(RadioActivity.this, stations));
+					list.setOnChildClickListener(RadioActivity.this);
+				}
+				if (what == RESULT_FAILED)
+				{
+					progress.setVisibility(View.GONE);
+					list.setVisibility(View.GONE);
+					message.setVisibility(View.VISIBLE);
+					message.setText(mes);
+				}
+			}
 		}
 	}
 	
@@ -314,8 +291,6 @@ public class RadioActivity extends Activity implements OnChildClickListener
 			Station station = stations.get(groupPosition);
 			if (station != null)
 			{
-				holder.image.setVisibility(View.GONE);
-				//imageManager.setImage(station.getIcon(), holder.image);
 				holder.name.setText(station.getName());
 				holder.progress.setVisibility(View.GONE);
 				if (RadioService.STATE == RadioService.STATE_PREPARING
@@ -394,14 +369,12 @@ public class RadioActivity extends Activity implements OnChildClickListener
 	
 	private class StationViewHolder
 	{
-		ImageView image;
 		TextView name;
 		ProgressBar progress;
 		ImageView play;
 		
 		public StationViewHolder(View view)
 		{
-			image = (ImageView) view.findViewById(R.id.item_station_image);
 			name = (TextView) view.findViewById(R.id.item_station_name);
 			progress = (ProgressBar) view.findViewById(R.id.item_station_progress);
 			play = (ImageView) view.findViewById(R.id.item_station_play);

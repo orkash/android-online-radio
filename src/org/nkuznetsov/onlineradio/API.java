@@ -38,6 +38,8 @@ public class API
 		
 		InputStream is = DownloadManager.getStreamHttpGETRequest(URL_STATIONS);
 	
+		if (is == null) throw new ServerErrorException();
+		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is, "utf-8"), 8 * 1024);
 		StringBuilder sb = new StringBuilder();
 		String line = null;

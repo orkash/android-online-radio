@@ -2,22 +2,20 @@
 <RelativeLayout
   	xmlns:android="http://schemas.android.com/apk/res/android"
   	android:orientation="vertical"
-  	android:layout_width="fill_parent" android:layout_height="wrap_content" android:paddingLeft="5dp" android:paddingRight="5dp" android:paddingBottom="2dp" android:paddingTop="2dp">
-	<ImageView 
-		android:src="@drawable/icon" 
-		android:id="@+id/item_station_image" 
-		android:layout_alignParentLeft="true" 
-		android:layout_centerVertical="true" 
-		android:layout_height="50dp" 
-		android:layout_width="50dp" 
-		android:adjustViewBounds="true" android:layout_marginRight="10dp"/>
+  	android:layout_width="fill_parent" 
+  	android:layout_height="wrap_content" 
+  	android:paddingLeft="5dp" 
+  	android:paddingRight="5dp" 
+  	android:paddingBottom="2dp" 
+  	android:paddingTop="2dp">
 	<TextView 
 		android:textAppearance="?android:attr/textAppearanceMedium" 
 		android:layout_width="wrap_content" 
 		android:id="@+id/item_station_name" 
-		android:text="TextView" 
-		android:layout_centerVertical="true" 
-		android:layout_toRightOf="@+id/item_station_image" android:layout_height="50dp" android:gravity="center_vertical"/>
+		android:text="TextView"
+		android:layout_centerVertical="true"
+		android:layout_height="50dp" 
+		android:gravity="center_vertical"/>
 	<ProgressBar 
 		style="?android:attr/progressBarStyleSmall" 
 		android:layout_width="wrap_content" 
@@ -29,5 +27,6 @@
 		android:layout_height="wrap_content" 
 		android:layout_width="wrap_content" 
 		android:layout_centerVertical="true" 
-		android:id="@+id/item_station_play" android:layout_alignParentRight="true"/>
+		android:id="@+id/item_station_play" 
+		android:layout_alignParentRight="true"/>
 </RelativeLayout>

@@ -95,14 +95,6 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	
 	private void lock()
 	{
-		/*
-		if (wakeLock == null)
-		{
-			PowerManager pm = (PowerManager)getSystemService(POWER_SERVICE);
-			wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, String.valueOf(NOTIFICATION_ID));
-		}
-		if (!wakeLock.isHeld()) wakeLock.acquire();
-		*/
 		if (wifiLock == null)
 		{
 			WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
@@ -113,7 +105,6 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	
 	private void unlock()
 	{
-		//if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
 		if (wifiLock != null && wifiLock.isHeld()) wifiLock.release();
 	}
 	

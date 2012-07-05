@@ -16,17 +16,33 @@
 		android:layout_centerVertical="true"
 		android:layout_height="50dp" 
 		android:gravity="center_vertical"/>
+	
+	<CheckBox
+	    android:id="@+id/item_station_favorite"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_centerVertical="true"
+	    android:layout_alignParentRight="true"
+	    style="?android:attr/starStyle" 
+	    android:focusable="false"
+	    android:layout_marginLeft="5dp"/>
+	
 	<ProgressBar 
 		style="?android:attr/progressBarStyleSmall" 
 		android:layout_width="wrap_content" 
 		android:id="@+id/item_station_progress" 
 		android:layout_height="wrap_content" 
-		android:layout_alignParentRight="true" 
-		android:layout_centerVertical="true"/>
-	<ImageView android:src="@drawable/play" 
+		android:layout_centerVertical="true"
+		android:layout_toLeftOf="@id/item_station_favorite" 
+		android:layout_alignWithParentIfMissing="true"/>
+	
+	<ImageView 
+	    android:src="@drawable/play" 
 		android:layout_height="wrap_content" 
 		android:layout_width="wrap_content" 
 		android:layout_centerVertical="true" 
 		android:id="@+id/item_station_play" 
-		android:layout_alignParentRight="true"/>
+		android:layout_toLeftOf="@id/item_station_favorite" 
+		android:layout_alignWithParentIfMissing="true"/>
+
 </RelativeLayout>

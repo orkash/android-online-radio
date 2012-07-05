@@ -24,4 +24,13 @@ public class Bitrate implements Serializable
 	{
 		return url;
 	}
+	
+	@Override
+	public int hashCode()
+	{
+		int hash = 61;
+		hash = 17 * hash + bitrate.hashCode();
+		hash = 17 * hash + url.hashCode();
+		return hash;
+	}
 }

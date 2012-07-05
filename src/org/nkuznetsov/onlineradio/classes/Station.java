@@ -39,4 +39,15 @@ public class Station implements Serializable
 	{
 		return bitrates;
 	}
+	
+	@Override
+	public int hashCode()
+	{
+		int hash = 27;
+		hash = 9 * hash + id.hashCode();
+		hash = 9 * hash + name.hashCode();
+		hash = 9 * hash + icon.hashCode();
+		hash = 9 * hash + bitrates.hashCode();
+		return hash;
+	}
 }

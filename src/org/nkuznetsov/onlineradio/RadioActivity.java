@@ -6,19 +6,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 import org.json.JSONException;
 import org.nkuznetsov.onlineradio.R;
 import org.nkuznetsov.onlineradio.classes.Bitrate;
 import org.nkuznetsov.onlineradio.classes.Station;
+import org.nkuznetsov.onlineradio.comparators.StationsComparatorByFavorite;
+import org.nkuznetsov.onlineradio.comparators.StationsComparatorByName;
 import org.nkuznetsov.onlineradio.exceptions.BadGatewayException;
 import org.nkuznetsov.onlineradio.exceptions.GatewayTimeoutException;
 import org.nkuznetsov.onlineradio.exceptions.ServerErrorException;
-
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
@@ -30,6 +32,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ImageView;
@@ -51,7 +56,7 @@ public class RadioActivity extends Activity implements OnChildClickListener
     private ExpandableListView list;
     
     private List<Station> stations;
-    
+    private StationsAdapter adapter;
     private StationLoader stationLoader;
     
 	@Override
@@ -59,7 +64,8 @@ public class RadioActivity extends Activity implements OnChildClickListener
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_radio);
-        
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+       
         // get views
         message = (TextView) findViewById(R.id.activity_radio_message);
         progress = (ProgressBar) findViewById(R.id.activity_radio_progress);
@@ -70,23 +76,36 @@ public class RadioActivity extends Activity implements OnChildClickListener
 	protected void onResume() 
 	{
 		super.onResume();
-		loadStations(ACTION_ACTIVITY_START);
 		RadioService.StateChangeListener = new OnStateChangeListener();
+		if (adapter != null) adapter.notifyDataSetChanged();
 	}
 	
 	@Override
 	protected void onPause() 
 	{
-		cancelLoadStations();
 		RadioService.StateChangeListener = null;
 		super.onPause();
+	}
+	
+	@Override
+	protected void onStart()
+	{
+		super.onStart();
+		if (adapter == null) loadStations(ACTION_ACTIVITY_START);
+	}
+	
+	@Override
+	protected void onStop()
+	{
+		cancelLoadStations();
+		super.onStop();
 	}
 	
 	private static final int UPDATE_STATIONS_ITEM_ID = 1;
 	private static final int STOP_RADIO_ITEM_ID = 2;
 	
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) 
+	public boolean onCreateOptionsMenu(Menu menu)
 	{
 		menu.add(0, UPDATE_STATIONS_ITEM_ID, 0, getString(R.string.menu_update));
 		menu.add(0, STOP_RADIO_ITEM_ID, 1, getString(R.string.menu_stop));
@@ -119,8 +138,8 @@ public class RadioActivity extends Activity implements OnChildClickListener
 			Bitrate bitrate = station.getBitrates().get(childPosition);
 			if (bitrate != null)
 			{
-				RadioService.GROP = groupPosition;
-				RadioService.CHILD = childPosition;
+				RadioService.GROP = station.hashCode();
+				RadioService.CHILD = bitrate.hashCode();
 				Intent newIntent = new Intent(getApplicationContext(), RadioService.class);
 				newIntent.setAction(RadioService.ACTION_START);
 				newIntent.putExtra(RadioService.EXTRA_STRING_URL, bitrate.getUrl());
@@ -173,13 +192,12 @@ public class RadioActivity extends Activity implements OnChildClickListener
 		@Override
 		protected Void doInBackground(Integer... params) 
 		{
+			FavoriteList.init(RadioActivity.this);
+			
 			try 
 			{
 				File stationsFile = new File(getFilesDir(), SELIALIZE_TO_FILE);
-				if (params[0] == ACTION_UPDATE_LIST)
-				{
-					stationsFile.delete();
-				}
+				if (params[0] == ACTION_UPDATE_LIST) stationsFile.delete();
 				if (stationsFile.exists())
 				{
 					ObjectInputStream is = new ObjectInputStream(new FileInputStream(stationsFile));
@@ -197,6 +215,8 @@ public class RadioActivity extends Activity implements OnChildClickListener
 					what = RESULT_OK_DOWNLOADED;
 				}
 				
+				Collections.sort(stations, new StationsComparatorByName());
+				Collections.sort(stations, new StationsComparatorByFavorite());
 			}
 			catch (PatternSyntaxException e) {} 
 			catch (BadGatewayException e) 
@@ -239,7 +259,8 @@ public class RadioActivity extends Activity implements OnChildClickListener
 					progress.setVisibility(View.GONE);
 					message.setVisibility(View.GONE);
 					list.setVisibility(View.VISIBLE);
-					list.setAdapter(new StationsAdapter(RadioActivity.this, stations));
+					adapter = new StationsAdapter();
+					list.setAdapter(adapter);
 					list.setOnChildClickListener(RadioActivity.this);
 				}
 				if (what == RESULT_FAILED)
@@ -253,17 +274,30 @@ public class RadioActivity extends Activity implements OnChildClickListener
 		}
 	}
 	
-	private class StationsAdapter extends BaseExpandableListAdapter
+	private class OnFavoriteChangeListener implements OnCheckedChangeListener
 	{
-		private Context context;
-		private List<Station> stations;
+		private String id;
 		
-		public StationsAdapter(Context context, List<Station> stations)
+		public OnFavoriteChangeListener(String id)
 		{
-			this.context = context;
-			this.stations = stations;
+			this.id = id;
 		}
 		
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+		{
+			if (isChecked) FavoriteList.add(id);
+			else FavoriteList.remove(id);
+			
+			Collections.sort(stations, new StationsComparatorByName());
+			Collections.sort(stations, new StationsComparatorByFavorite());
+			
+			adapter.notifyDataSetChanged();
+		}
+	}
+	
+	private class StationsAdapter extends BaseExpandableListAdapter
+	{	
 		@Override
 		public Bitrate getChild(int groupPosition, int childPosition) 
 		{
@@ -283,21 +317,28 @@ public class RadioActivity extends Activity implements OnChildClickListener
 			if (convertView != null) holder = (StationViewHolder) convertView.getTag();
 			else
 			{
-				convertView = ((LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.item_station, null);
+				convertView = LayoutInflater.from(RadioActivity.this).inflate(R.layout.item_station, null);
 				holder = new StationViewHolder(convertView);
 				convertView.setTag(holder);
 			}
 			
 			Station station = stations.get(groupPosition);
-			if (station != null)
+			
+			holder.name.setText(station.getName());
+			
+			holder.favorite.setOnCheckedChangeListener(null);
+			holder.favorite.setChecked(FavoriteList.isFavorite(station.getId()));
+			holder.favorite.setOnCheckedChangeListener(new OnFavoriteChangeListener(station.getId()));
+			
+			holder.progress.setVisibility(View.GONE);
+			holder.play.setVisibility(View.GONE);
+			
+			if (RadioService.GROP == station.hashCode())
 			{
-				holder.name.setText(station.getName());
-				holder.progress.setVisibility(View.GONE);
-				if (RadioService.STATE == RadioService.STATE_PREPARING
-						&& RadioService.GROP == groupPosition) holder.progress.setVisibility(View.VISIBLE);
-				holder.play.setVisibility(View.GONE);
-				if (RadioService.STATE == RadioService.STATE_STARTED
-						&& RadioService.GROP == groupPosition) holder.play.setVisibility(View.VISIBLE);
+				if (RadioService.STATE == RadioService.STATE_PREPARING)
+					holder.progress.setVisibility(View.VISIBLE);
+				if (RadioService.STATE == RadioService.STATE_STARTED)
+					holder.play.setVisibility(View.VISIBLE);
 			}
 			return convertView;
 		}
@@ -309,24 +350,27 @@ public class RadioActivity extends Activity implements OnChildClickListener
 			if (convertView != null) holder = (BitrateViewHolder) convertView.getTag();
 			else
 			{
-				convertView = ((LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.item_bitrate, null);
+				convertView =  LayoutInflater.from(RadioActivity.this).inflate(R.layout.item_bitrate, null);
 				holder = new BitrateViewHolder(convertView);
 				convertView.setTag(holder);
 			}
 			
-			Bitrate bitrate = stations.get(groupPosition).getBitrates().get(childPosition);
-			if (bitrate != null)
+			Station station = stations.get(groupPosition);
+			Bitrate bitrate = station.getBitrates().get(childPosition);
+			
+			holder.name.setText(String.format("%s  Ѕит/сек", bitrate.getBitrate()));
+			
+			holder.progress.setVisibility(View.GONE);
+			holder.play.setVisibility(View.GONE);
+			
+			if (RadioService.CHILD == bitrate.hashCode())
 			{
-				holder.name.setText(String.format("%s  Ѕит/сек", bitrate.getBitrate()));
-				holder.progress.setVisibility(View.GONE);
-				if (RadioService.STATE == RadioService.STATE_PREPARING
-						&& RadioService.GROP == groupPosition
-						&& RadioService.CHILD == childPosition) holder.progress.setVisibility(View.VISIBLE);
-				holder.play.setVisibility(View.GONE);
-				if (RadioService.STATE == RadioService.STATE_STARTED
-						&& RadioService.GROP == groupPosition
-						&& RadioService.CHILD == childPosition) holder.play.setVisibility(View.VISIBLE);
+				if (RadioService.STATE == RadioService.STATE_PREPARING)
+					holder.progress.setVisibility(View.VISIBLE);
+				if (RadioService.STATE == RadioService.STATE_STARTED)
+					holder.play.setVisibility(View.VISIBLE);
 			}
+			
 			return convertView;
 		}
 
@@ -372,12 +416,14 @@ public class RadioActivity extends Activity implements OnChildClickListener
 		TextView name;
 		ProgressBar progress;
 		ImageView play;
+		CheckBox favorite;
 		
 		public StationViewHolder(View view)
 		{
 			name = (TextView) view.findViewById(R.id.item_station_name);
 			progress = (ProgressBar) view.findViewById(R.id.item_station_progress);
 			play = (ImageView) view.findViewById(R.id.item_station_play);
+			favorite = (CheckBox) view.findViewById(R.id.item_station_favorite);
 		}
 	}
 	

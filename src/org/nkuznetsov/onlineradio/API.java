@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,7 +63,7 @@ public class API
 				JSONObject json_bitrates = json_staticon.getJSONObject("bitrates");
 				
 				List<Bitrate> bitrates = new ArrayList<Bitrate>();
-			
+				
 				@SuppressWarnings("unchecked")
 				Iterator<String> keys = json_bitrates.keys();
 				while (keys.hasNext())
@@ -73,7 +74,6 @@ public class API
 				
 				stations.add(new Station(json_staticon.getString("id"), 
 										json_staticon.getString("name"), 
-										json_staticon.getString("icon"), 
 										bitrates));
 			}
 		}

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    
     <string name="app_name">Online Radio</string>
-    <string name="error_server">Сервер недоступен</string>
+    <string name="share">Online Radio - простая и удобная программа для прослушивания онлайн радио. Используются трансляции с Rambler радио. https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="error_server">Сервис недоступен</string>
     <string name="error_json">Не удалось проанализировать файл станций, возможно формат файла изменился</string>
-    <string name="error_io">Ошибка ввода-вывода, попробуйте обновить станции (Меню - Обновить станции)</string>
+    <string name="error_io">Ошибка ввода-вывода, попробуйте обновить станции</string>
     <string name="menu_update">Обновить станции</string>
-    <string name="menu_stop">Остановить проигрывание</string>
+    <string name="menu_stop">Стоп</string>
+    <string name="menu_rate">Поставить оценку</string>
+    <string name="menu_share">Рассказать друзьям</string>
 </resources>

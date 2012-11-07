@@ -9,14 +9,12 @@ public class Station implements Serializable
 	
 	private String id;
 	private String name;
-	private String icon;
 	private List<Bitrate> bitrates;
 	
-	public Station(String id, String name, String icon, List<Bitrate> bitrates)
+	public Station(String id, String name, List<Bitrate> bitrates)
 	{
 		this.id = id;
 		this.name = name;
-		this.icon = icon;
 		this.bitrates = bitrates;
 	}
 	
@@ -30,11 +28,6 @@ public class Station implements Serializable
 		return name;
 	}
 	
-	public String getIcon() 
-	{
-		return icon;
-	}
-	
 	public List<Bitrate> getBitrates() 
 	{
 		return bitrates;
@@ -46,7 +39,6 @@ public class Station implements Serializable
 		int hash = 27;
 		hash = 9 * hash + id.hashCode();
 		hash = 9 * hash + name.hashCode();
-		hash = 9 * hash + icon.hashCode();
 		hash = 9 * hash + bitrates.hashCode();
 		return hash;
 	}

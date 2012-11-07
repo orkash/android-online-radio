@@ -9,26 +9,24 @@ import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
+
 import org.json.JSONException;
-import org.nkuznetsov.onlineradio.R;
 import org.nkuznetsov.onlineradio.classes.Bitrate;
 import org.nkuznetsov.onlineradio.classes.Station;
+import org.nkuznetsov.onlineradio.comparators.BitrateComparatorByBitrate;
 import org.nkuznetsov.onlineradio.comparators.StationsComparatorByFavorite;
 import org.nkuznetsov.onlineradio.comparators.StationsComparatorByName;
 import org.nkuznetsov.onlineradio.exceptions.BadGatewayException;
 import org.nkuznetsov.onlineradio.exceptions.GatewayTimeoutException;
 import org.nkuznetsov.onlineradio.exceptions.ServerErrorException;
-import android.app.Activity;
+
 import android.content.Intent;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -41,7 +39,12 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class RadioActivity extends Activity implements OnChildClickListener
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+
+public class RadioActivity extends SherlockActivity implements OnChildClickListener
 {
     private static final int ACTION_ACTIVITY_START = 0;
     private static final int ACTION_UPDATE_LIST = 1;
@@ -49,7 +52,6 @@ public class RadioActivity extends Activity implements OnChildClickListener
     private static final int RESULT_OK_READED = 1;
     private static final int RESULT_OK_DOWNLOADED = 2;
     private static final int RESULT_FAILED = 3;
-    public static final int PLAYING_STATE_CHANGED_EVENT = 5548756;
     
 	private TextView message;
     private ProgressBar progress;
@@ -65,7 +67,12 @@ public class RadioActivity extends Activity implements OnChildClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_radio);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
-       
+        
+        getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE, 
+        		ActionBar.DISPLAY_SHOW_TITLE | 
+        		ActionBar.DISPLAY_SHOW_HOME | 
+        		ActionBar.DISPLAY_USE_LOGO);
+        
         // get views
         message = (TextView) findViewById(R.id.activity_radio_message);
         progress = (ProgressBar) findViewById(R.id.activity_radio_progress);
@@ -76,14 +83,14 @@ public class RadioActivity extends Activity implements OnChildClickListener
 	protected void onResume() 
 	{
 		super.onResume();
-		RadioService.StateChangeListener = new OnStateChangeListener();
+		RadioService.stateChangeListener = onStateChangeListener;
 		if (adapter != null) adapter.notifyDataSetChanged();
 	}
 	
 	@Override
 	protected void onPause() 
 	{
-		RadioService.StateChangeListener = null;
+		RadioService.stateChangeListener = null;
 		super.onPause();
 	}
 	
@@ -101,29 +108,53 @@ public class RadioActivity extends Activity implements OnChildClickListener
 		super.onStop();
 	}
 	
-	private static final int UPDATE_STATIONS_ITEM_ID = 1;
-	private static final int STOP_RADIO_ITEM_ID = 2;
+	private static final int MENU_UPDATE = 1;
+	private static final int MENU_STOP = 2;
+	private static final int MENU_RATE = 3;
+	private static final int MENU_SHARE = 4;
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
-		menu.add(0, UPDATE_STATIONS_ITEM_ID, 0, getString(R.string.menu_update));
-		menu.add(0, STOP_RADIO_ITEM_ID, 1, getString(R.string.menu_stop));
+		MenuItem share = menu.add(0, MENU_SHARE, 0, getString(R.string.menu_share));
+		share.setIcon(R.drawable.ic_share);
+		share.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+		
+		MenuItem stop = menu.add(0, MENU_STOP, 1, getString(R.string.menu_stop));
+		stop.setIcon(R.drawable.ic_stop);
+		stop.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+		
+		MenuItem update = menu.add(0, MENU_UPDATE, 2, getString(R.string.menu_update));
+		update.setIcon(R.drawable.ic_refresh);
+		update.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+		
+		MenuItem rate = menu.add(0, MENU_RATE, 3, getString(R.string.menu_rate));
+		rate.setIcon(R.drawable.ic_rate);
+		rate.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+		
 		return true;
 	}
 	
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) 
+	public boolean onOptionsItemSelected(MenuItem item)
 	{
 		switch (item.getItemId())
 		{
-			case UPDATE_STATIONS_ITEM_ID:
+			case MENU_UPDATE:
 				loadStations(ACTION_UPDATE_LIST);
-			case STOP_RADIO_ITEM_ID:
-				if (RadioService.STATE != RadioService.STATE_STOPPED)
-				{
+			case MENU_STOP:
+				if (RadioService.STATE != RadioService.STATE_STOPPED) 
 					RadioService.stopService(getApplicationContext());
-				}
+				break;
+			case MENU_SHARE:
+				Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
+				shareIntent.setType("text/plain");
+				shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.app_name));
+				shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, getString(R.string.share));
+				startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));
+				break;
+			case MENU_RATE:
+				startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
 				break;
 		}
 		return true;
@@ -150,18 +181,22 @@ public class RadioActivity extends Activity implements OnChildClickListener
 		return false;
 	}
 	
-	private class OnStateChangeListener extends Handler
-	{	
+	private Runnable onStateChangeListener = new Runnable()
+	{
 		@Override
-		public void handleMessage(Message msg) 
+		public void run()
 		{
-			if (msg.what == PLAYING_STATE_CHANGED_EVENT)
+			runOnUiThread(new Runnable()
 			{
-				StationsAdapter adapter = ((StationsAdapter)list.getExpandableListAdapter());
-				if (adapter != null) adapter.notifyDataSetChanged();
-			}
+				@Override
+				public void run()
+				{
+					StationsAdapter adapter = ((StationsAdapter)list.getExpandableListAdapter());
+					if (adapter != null) adapter.notifyDataSetChanged();
+				}
+			});
 		}
-	}
+	};
 	
 	private void loadStations(int action)
 	{
@@ -214,6 +249,9 @@ public class RadioActivity extends Activity implements OnChildClickListener
 					os.close();
 					what = RESULT_OK_DOWNLOADED;
 				}
+				
+				for (Station station : stations) 
+					Collections.sort(station.getBitrates(), new BitrateComparatorByBitrate());
 				
 				Collections.sort(stations, new StationsComparatorByName());
 				Collections.sort(stations, new StationsComparatorByFavorite());

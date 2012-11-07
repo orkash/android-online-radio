@@ -14,11 +14,11 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
-import android.os.Handler;
+import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.telephony.TelephonyManager;
-
-import org.nkuznetsov.onlineradio.R;
 
 public class RadioService extends Service implements OnErrorListener, OnCompletionListener
 {
@@ -34,12 +34,12 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	public static int GROP;
 	public static int CHILD;
 	public static int STATE = STATE_STOPPED;
-	public static Handler StateChangeListener;
+	public static Runnable stateChangeListener;
 	
 	private static final int NOTIFICATION_ID = 234231;
 	
 	private MediaPlayer mediaPlayer;
-	//private WakeLock wakeLock;
+	private WakeLock wakeLock;
 	private WifiLock wifiLock;
 	
 	private long timestamp;
@@ -62,15 +62,14 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	private void setState(int state)
 	{
 		STATE = state;
-		if (StateChangeListener != null) 
-			StateChangeListener.sendMessage(StateChangeListener.obtainMessage(RadioActivity.PLAYING_STATE_CHANGED_EVENT));
+		if (stateChangeListener != null) stateChangeListener.run();
 	}
 	
 	public void registerCallStateBroadcastReceiver()
 	{
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-		filter.addAction(Intent.ACTION_NEW_OUTGOING_CALL);
+		//filter.addAction(Intent.ACTION_NEW_OUTGOING_CALL);
 		registerReceiver(callStateBroadcastReceiver, filter);
 	}
 	
@@ -83,6 +82,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		catch (Exception e) {}
 	}
 	
+	@SuppressWarnings("deprecation")
 	private void startForeground(String text)
 	{
 		Intent newIntent = new Intent(getApplicationContext(), RadioActivity.class);
@@ -99,14 +99,22 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		if (wifiLock == null)
 		{
 			WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
-			wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL, String.valueOf(NOTIFICATION_ID));
+			int lockMode = (Build.VERSION.SDK_INT >= 12) ? WifiManager.WIFI_MODE_FULL_HIGH_PERF : WifiManager.WIFI_MODE_FULL;
+			wifiLock = wm.createWifiLock(lockMode, String.valueOf(NOTIFICATION_ID));
 		}
 		if (!wifiLock.isHeld()) wifiLock.acquire();
+		if (wakeLock == null)
+		{
+			PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+			wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, String.valueOf(NOTIFICATION_ID));
+		}
+		if (!wakeLock.isHeld()) wakeLock.acquire();
 	}
 	
 	private void unlock()
 	{
 		if (wifiLock != null && wifiLock.isHeld()) wifiLock.release();
+		if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
 	}
 	
 	private void stopPlayback()
@@ -199,18 +207,10 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		@Override
 		public void onReceive(Context context, Intent intent) 
 		{
-			// входящий вызов и сброс
 			if (intent.getAction().equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED))
 			{
-				String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
-				// входящий
-				if (state.equalsIgnoreCase(TelephonyManager.EXTRA_STATE_RINGING))
-				{
-					stopPlayback();
-				}
-				
-				// сброс
-				if (state.equals(TelephonyManager.EXTRA_STATE_IDLE))
+				if (isActiveCall(context)) stopPlayback();
+				else 
 				{
 					if (lastIntent != null)
 					{
@@ -219,14 +219,12 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 					}
 				}
 			}
-			
-			// исходящий вызов
-			if (intent.getAction().equals(Intent.ACTION_NEW_OUTGOING_CALL))
-			{
-				String number = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
-				if (number != null && !number.matches("[\\*#][0-9\\*#]{2,}#"))
-					stopPlayback();
-			}
+		}
+		
+		private boolean isActiveCall(Context context)
+		{
+			TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+			return (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) ? false : true;
 		}
 	}
 	

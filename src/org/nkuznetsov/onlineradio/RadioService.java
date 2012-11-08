@@ -11,6 +11,8 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
@@ -19,6 +21,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 public class RadioService extends Service implements OnErrorListener, OnCompletionListener
 {
@@ -43,14 +46,14 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	private WifiLock wifiLock;
 	
 	private long timestamp;
-	private CallStateBroadcastReceiver callStateBroadcastReceiver;
+	private ServiceReceiver serviceReceiver;
 	private Intent lastIntent;
 	
 	@Override
 	public void onCreate() 
 	{
 		super.onCreate();
-		callStateBroadcastReceiver = new CallStateBroadcastReceiver();
+		serviceReceiver = new ServiceReceiver(this);
 	}
 	
 	@Override
@@ -65,19 +68,21 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		if (stateChangeListener != null) stateChangeListener.run();
 	}
 	
-	public void registerCallStateBroadcastReceiver()
+	public void registerServiceReceiver()
 	{
+		unregisterServiceReceiver();
+		
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-		//filter.addAction(Intent.ACTION_NEW_OUTGOING_CALL);
-		registerReceiver(callStateBroadcastReceiver, filter);
+		filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+		registerReceiver(serviceReceiver, filter);
 	}
 	
-	public void unRegisterCallStateBroadcastReceiver()
+	public void unregisterServiceReceiver()
 	{
 		try
 		{
-			unregisterReceiver(callStateBroadcastReceiver);
+			unregisterReceiver(serviceReceiver);
 		}
 		catch (Exception e) {}
 	}
@@ -125,6 +130,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 			mediaPlayer.release();
 			mediaPlayer = null;
 		}
+		setState(STATE_PREPARING);
 	}
 	
 	@Override
@@ -151,80 +157,129 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 				timestamp = System.currentTimeMillis();
 				startForeground(intent.getStringExtra(EXTRA_STRING_NOTIFICATION));
 				lock();
-				registerCallStateBroadcastReceiver();
-				new Thread()
-				{
-					@Override
-					public void run() 
-					{
-						long time = timestamp;
-						int r = 0;
-						if (mediaPlayer != null)
-						{
-							mediaPlayer.release();
-							mediaPlayer = null;
-						}
-						while (mediaPlayer == null && r < 10)
-						{
-							try
-							{
-								setState(STATE_PREPARING);
-								String url = API.getStream(intent.getStringExtra(EXTRA_STRING_URL));
-								MediaPlayer mp = MediaPlayer.create(getApplicationContext(), Uri.parse(url));
-								if (time == timestamp && STATE == STATE_PREPARING)
-								{
-									mediaPlayer = mp;
-									mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-									mediaPlayer.setOnErrorListener(RadioService.this);
-									mediaPlayer.setOnCompletionListener(RadioService.this);
-									setState(STATE_STARTED);
-									mediaPlayer.start();
-									return;
-								} else return;
-							}
-							catch (Exception e) {}
-							r++;
-						}
-						RadioService.stopService(getApplicationContext());
-					}
-				}.start();
+				registerServiceReceiver();
+				if (serviceReceiver.isAllowPlay(this)) new PrepareAndPlay(intent).start();
+				else stopPlayback();
+				return START_STICKY;
 			}
+			
 			if (intent.getAction().equals(ACTION_STOP))
 			{
 				stopPlayback();
-				unRegisterCallStateBroadcastReceiver();
+				unregisterServiceReceiver();
 				unlock();
 				stopForeground(true);
 				stopSelf();
 				setState(STATE_STOPPED);
+				return START_NOT_STICKY;
 			}
 		}
-		return START_STICKY;
+		return START_NOT_STICKY;
 	}
 	
-	private class CallStateBroadcastReceiver extends BroadcastReceiver
+	private class PrepareAndPlay extends Thread
+	{
+		private Intent intent;
+		
+		public PrepareAndPlay(Intent intent)
+		{
+			this.intent = intent;
+		}
+		
+		@Override
+		public void run() 
+		{
+			long time = timestamp;
+			int r = 1;
+			if (mediaPlayer != null)
+			{
+				mediaPlayer.release();
+				mediaPlayer = null;
+			}
+			while (mediaPlayer == null && r <= 10)
+			{
+				try
+				{
+					setState(STATE_PREPARING);
+					String url = API.getStream(intent.getStringExtra(EXTRA_STRING_URL));
+					MediaPlayer mp = MediaPlayer.create(getApplicationContext(), Uri.parse(url));
+					if (time == timestamp && STATE == STATE_PREPARING)
+					{
+						mediaPlayer = mp;
+						mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+						mediaPlayer.setOnErrorListener(RadioService.this);
+						mediaPlayer.setOnCompletionListener(RadioService.this);
+						mediaPlayer.start();
+						setState(STATE_STARTED);
+						return;
+					} else return;
+				}
+				catch (Exception e) 
+				{
+					Log.e("RadioService", "Prepare error", e);
+				}
+				r++;
+			}
+			RadioService.stopService(getApplicationContext());
+		}
+	}
+	
+	private class ServiceReceiver extends BroadcastReceiver
 	{		
+		private boolean isConnected;
+		private boolean isActiveCall;
+		
+		public ServiceReceiver(Context context)
+		{
+			isConnected = isActiveConnection(context);
+			isActiveCall = isActiveCall(context);
+		}
+		
 		@Override
 		public void onReceive(Context context, Intent intent) 
 		{
+			if (intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION))
+			{
+				NetworkInfo ni = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+				boolean newIsConnected = ni.isConnected();
+				if (isConnected == newIsConnected) return;
+				isConnected = newIsConnected;
+			}
+			
 			if (intent.getAction().equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED))
 			{
-				if (isActiveCall(context)) stopPlayback();
-				else 
-				{
-					if (lastIntent != null)
-					{
-						startService(lastIntent);
-						lastIntent = null;
-					}
-				}
+				boolean newIsActiveCall = isActiveCall(context);
+				if (isActiveCall == newIsActiveCall) return;
+				isActiveCall = newIsActiveCall;
 			}
+			
+			if (isActiveCall || !isConnected) stopPlayback();
+			else if (lastIntent != null)
+			{
+				startService(lastIntent);
+				lastIntent = null;
+			}
+		}
+		
+		public boolean isAllowPlay(Context context)
+		{
+			isConnected = isActiveConnection(context);
+			isActiveCall = isActiveCall(context);
+			return (!isActiveCall && isConnected);
 		}
 		
 		private boolean isActiveCall(Context context)
 		{
 			TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 			return (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) ? false : true;
+		}
+		
+		private boolean isActiveConnection(Context context)
+		{
+			ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+			NetworkInfo ni = cm.getActiveNetworkInfo();
+			if (ni != null) return ni.isConnected();
+			return false;
 		}
 	}
 	

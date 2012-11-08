@@ -26,22 +26,22 @@ public class FavoriteList
 	
 	private static void save()
 	{
-		String tmpFav = new String();
+		String tmpFav = "";
 		
 		if (favorites.size() > 0)
 		{
-			tmpFav = String.valueOf(favorites.get(0));
+			tmpFav = tmpFav.concat(favorites.get(0));
 			
 			for (int i = 1; i < favorites.size(); i++)
 			{
-				tmpFav += FAVORITES_SEPARATOR;
-				tmpFav += favorites.get(i);
+				tmpFav = tmpFav.concat(FAVORITES_SEPARATOR);
+				tmpFav = tmpFav.concat(favorites.get(i));
 			}
 		}
 		
 		SharedPreferences.Editor editor = preferences.edit();
 		
-		if (tmpFav.equals(new String())) editor.remove(FAVORITES_KEY);
+		if (tmpFav.equals("")) editor.remove(FAVORITES_KEY);
 		else editor.putString(FAVORITES_KEY, tmpFav);
 		
 		editor.commit();

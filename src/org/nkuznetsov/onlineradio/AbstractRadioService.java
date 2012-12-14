@@ -33,6 +33,7 @@ public abstract class AbstractRadioService extends Service implements OnErrorLis
 	public final static int STATE_STARTED = 1;
 	public final static int STATE_STOPPED = 2;
 	public final static int STATE_PREPARING = 3;
+	public final static int STATE_RECORDED = 4;
 	
 	public static int GROP;
 	public static int CHILD;
@@ -62,7 +63,7 @@ public abstract class AbstractRadioService extends Service implements OnErrorLis
 		return null;
 	}
 
-	private void setState(int state)
+	protected void setState(int state)
 	{
 		STATE = state;
 		if (stateChangeListener != null) stateChangeListener.run();
@@ -293,5 +294,25 @@ public abstract class AbstractRadioService extends Service implements OnErrorLis
 			newIntent.setAction(ACTION_STOP);
 			context.startService(newIntent);
 		}
+	}
+	
+	public static boolean isRecording()
+	{
+		return STATE == STATE_RECORDED;
+	}
+	
+	public static boolean isPlaying()
+	{
+		return STATE == STATE_STARTED;
+	}
+	
+	public static boolean isPreparing()
+	{
+		return STATE == STATE_PREPARING;
+	}
+	
+	public static boolean isStopped()
+	{
+		return STATE == STATE_STOPPED;
 	}
 }

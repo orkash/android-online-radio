@@ -1,34 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-  	android:orientation="vertical"
-  	android:layout_width="fill_parent" 
-  	android:layout_height="wrap_content" 
-  	android:paddingBottom="2dp" 
-  	android:paddingLeft="5dp" 
-  	android:paddingRight="5dp" 
-  	android:paddingTop="2dp">
-    <TextView 
-    	android:textAppearance="?android:attr/textAppearanceMedium" 
-    	android:layout_width="wrap_content" 
-    	android:id="@+id/item_bitrate_name" 
-    	android:text="TextView" 
-    	android:layout_alignParentLeft="true" 
-    	android:layout_centerVertical="true" 
-    	android:layout_height="50dp" 
-    	android:gravity="center_vertical" 
-    	android:layout_marginLeft="30dp"/>
-    <ProgressBar 
-		style="?android:attr/progressBarStyleSmall" 
-		android:layout_width="wrap_content" 
-		android:id="@+id/item_bitrate_progress" 
-		android:layout_height="wrap_content" 
-		android:layout_alignParentRight="true" 
-		android:layout_centerVertical="true"/>
-    <ImageView android:src="@drawable/play" 
-    	android:layout_height="wrap_content" 
-    	android:layout_width="wrap_content" 
-    	android:layout_centerVertical="true" 
-    	android:id="@+id/item_bitrate_play" 
-    	android:layout_alignParentRight="true"/>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="2dp"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
+    android:paddingTop="2dp" >
+
+    <TextView
+        android:id="@+id/item_bitrate_name"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="30dp"
+        android:gravity="center_vertical"
+        android:text="TextView"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <ProgressBar
+        android:id="@+id/item_bitrate_progress"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true" />
+
+    <ImageView
+        android:id="@+id/item_bitrate_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/play" />
+
+    <ImageView
+        android:id="@+id/item_bitrate_record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/record" />
+
 </RelativeLayout>

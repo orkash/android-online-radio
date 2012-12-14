@@ -44,7 +44,7 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
-public abstract class AbstractRadioActivity extends SherlockActivity implements OnChildClickListener
+public abstract class AbstractRadioActivity extends SherlockActivity
 {
     private static final int ACTION_ACTIVITY_START = 0;
     private static final int ACTION_UPDATE_LIST = 1;
@@ -85,14 +85,14 @@ public abstract class AbstractRadioActivity extends SherlockActivity implements 
 	protected void onResume() 
 	{
 		super.onResume();
-		RadioService.stateChangeListener = onStateChangeListener;
+		AbstractRadioService.stateChangeListener = onStateChangeListener;
 		if (adapter != null) adapter.notifyDataSetChanged();
 	}
 	
 	@Override
 	protected void onPause() 
 	{
-		RadioService.stateChangeListener = null;
+		AbstractRadioService.stateChangeListener = null;
 		super.onPause();
 	}
 	
@@ -110,29 +110,63 @@ public abstract class AbstractRadioActivity extends SherlockActivity implements 
 		super.onStop();
 	}
 	
-	private static final int MENU_UPDATE = 1;
-	private static final int MENU_STOP = 2;
-	private static final int MENU_RATE = 3;
-	private static final int MENU_SHARE = 4;
+	protected static final int MENU_UPDATE = 1;
+	protected static final int MENU_STOP = 2;
+	protected static final int MENU_RATE = 3;
+	protected static final int MENU_SHARE = 4;
+	protected static final int MENU_RECORD = 5;
+	protected static final int MENU_RECORDSTOP = 6;
+	
+	public abstract OrderedHashMap<Integer, Integer> getMenuItemsOrder();
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
-		MenuItem share = menu.add(0, MENU_SHARE, 0, getString(R.string.menu_share));
-		share.setIcon(R.drawable.ic_share);
-		share.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+		OrderedHashMap<Integer, Integer> order = getMenuItemsOrder();
 		
-		MenuItem stop = menu.add(0, MENU_STOP, 1, getString(R.string.menu_stop));
-		stop.setIcon(R.drawable.ic_stop);
-		stop.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-		
-		MenuItem update = menu.add(0, MENU_UPDATE, 2, getString(R.string.menu_update));
-		update.setIcon(R.drawable.ic_refresh);
-		update.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-		
-		MenuItem rate = menu.add(0, MENU_RATE, 3, getString(R.string.menu_rate));
-		rate.setIcon(R.drawable.ic_rate);
-		rate.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+		for (Integer i : order.keyOrder())
+		{
+			MenuItem item = null;
+			
+			if (i == MENU_UPDATE)
+			{
+				item = menu.add(0, MENU_UPDATE, menu.size(), getString(R.string.menu_update));
+				item.setIcon(R.drawable.ic_refresh);
+			}
+			
+			if (i == MENU_STOP && !AbstractRadioService.isRecording())
+			{
+				item = menu.add(0, MENU_STOP, menu.size(), getString(R.string.menu_stop));
+				item.setIcon(R.drawable.ic_stop);
+			}
+			
+			if (i == MENU_RATE)
+			{
+				item = menu.add(0, MENU_RATE, menu.size(), getString(R.string.menu_rate));
+				item.setIcon(R.drawable.ic_rate);
+			}
+			
+			if (i == MENU_SHARE)
+			{
+				item = menu.add(0, MENU_SHARE, menu.size(), getString(R.string.menu_share));
+				item.setIcon(R.drawable.ic_share);
+			}
+			
+			if (i == MENU_RECORD && !AbstractRadioService.isRecording())
+			{
+				item = menu.add(0, MENU_RECORD, menu.size(), getString(R.string.menu_record));
+				item.setIcon(R.drawable.ic_record);
+			}
+			
+			if (i == MENU_RECORDSTOP && AbstractRadioService.isRecording())
+			{
+				item = menu.add(0, MENU_RECORDSTOP, menu.size(), getString(R.string.menu_recordstop));
+				item.setIcon(R.drawable.ic_recordstop);
+			}
+			
+			if (item != null) 
+				item.setShowAsAction(order.get(i) | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+		}
 		
 		return true;
 	}
@@ -143,45 +177,55 @@ public abstract class AbstractRadioActivity extends SherlockActivity implements 
 		switch (item.getItemId())
 		{
 			case MENU_UPDATE:
-				loadStations(ACTION_UPDATE_LIST);
+				menuUpdateHit();
+				break;
 			case MENU_STOP:
-				if (RadioService.STATE != RadioService.STATE_STOPPED) 
-					RadioService.stopService(getApplicationContext(), getServiceClass());
+				menuStopHit();
 				break;
 			case MENU_SHARE:
-				Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
-				shareIntent.setType("text/plain");
-				shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.app_name));
-				shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, getString(R.string.share));
-				startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));
+				menuShareHit();
 				break;
 			case MENU_RATE:
-				startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
+				menuRateHit();
+				break;
+			case MENU_RECORD:
+				menuRecordHit();
+				break;
+			case MENU_RECORDSTOP:
+				menuRecordstopHit();
 				break;
 		}
 		return true;
 	}
 	
-	@Override
-	public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) 
+	protected void menuUpdateHit()
 	{
-		Station station = stations.get(groupPosition);
-		if (station != null)
-		{
-			Bitrate bitrate = station.getBitrates().get(childPosition);
-			if (bitrate != null)
-			{
-				RadioService.GROP = station.hashCode();
-				RadioService.CHILD = bitrate.hashCode();
-				Intent newIntent = new Intent(getApplicationContext(), getServiceClass());
-				newIntent.setAction(RadioService.ACTION_START);
-				newIntent.putExtra(RadioService.EXTRA_STRING_URL, bitrate.getUrl());
-				newIntent.putExtra(RadioService.EXTRA_STRING_NOTIFICATION, String.format("%s (%s  Ѕит/сек)", station.getName(), bitrate.getBitrate()));
-				startService(newIntent);
-			}
-		}
-		return false;
+		loadStations(ACTION_UPDATE_LIST);
 	}
+	
+	protected void menuStopHit()
+	{
+		if (!AbstractRadioService.isStopped()) 
+			AbstractRadioService.stopService(getApplicationContext(), getServiceClass());
+	}
+	
+	protected void menuShareHit()
+	{
+		Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
+		shareIntent.setType("text/plain");
+		shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.app_name));
+		shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, getString(R.string.share));
+		startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));
+	}
+	
+	protected void menuRateHit()
+	{
+		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
+	}
+	
+	protected void menuRecordHit() {}
+	
+	protected void menuRecordstopHit() {}
 	
 	private Runnable onStateChangeListener = new Runnable()
 	{
@@ -195,6 +239,8 @@ public abstract class AbstractRadioActivity extends SherlockActivity implements 
 				{
 					StationsAdapter adapter = ((StationsAdapter)list.getExpandableListAdapter());
 					if (adapter != null) adapter.notifyDataSetChanged();
+					
+					invalidateOptionsMenu();
 				}
 			});
 		}
@@ -301,7 +347,7 @@ public abstract class AbstractRadioActivity extends SherlockActivity implements 
 					list.setVisibility(View.VISIBLE);
 					adapter = new StationsAdapter();
 					list.setAdapter(adapter);
-					list.setOnChildClickListener(AbstractRadioActivity.this);
+					list.setOnChildClickListener(adapter);
 				}
 				if (what == RESULT_FAILED)
 				{
@@ -336,7 +382,7 @@ public abstract class AbstractRadioActivity extends SherlockActivity implements 
 		}
 	}
 	
-	private class StationsAdapter extends BaseExpandableListAdapter
+	private class StationsAdapter extends BaseExpandableListAdapter implements OnChildClickListener
 	{	
 		@Override
 		public Bitrate getChild(int groupPosition, int childPosition) 
@@ -372,13 +418,16 @@ public abstract class AbstractRadioActivity extends SherlockActivity implements 
 			
 			holder.progress.setVisibility(View.GONE);
 			holder.play.setVisibility(View.GONE);
+			holder.record.setVisibility(View.GONE);
 			
-			if (RadioService.GROP == station.hashCode())
+			if (AbstractRadioService.GROP == station.hashCode())
 			{
-				if (RadioService.STATE == RadioService.STATE_PREPARING)
+				if (AbstractRadioService.isPreparing())
 					holder.progress.setVisibility(View.VISIBLE);
-				if (RadioService.STATE == RadioService.STATE_STARTED)
+				if (AbstractRadioService.isPlaying())
 					holder.play.setVisibility(View.VISIBLE);
+				if (AbstractRadioService.isRecording())
+					holder.record.setVisibility(View.VISIBLE);
 			}
 			return convertView;
 		}
@@ -402,13 +451,16 @@ public abstract class AbstractRadioActivity extends SherlockActivity implements 
 			
 			holder.progress.setVisibility(View.GONE);
 			holder.play.setVisibility(View.GONE);
+			holder.record.setVisibility(View.GONE);
 			
-			if (RadioService.CHILD == bitrate.hashCode())
+			if (AbstractRadioService.CHILD == bitrate.hashCode())
 			{
-				if (RadioService.STATE == RadioService.STATE_PREPARING)
+				if (AbstractRadioService.isPreparing())
 					holder.progress.setVisibility(View.VISIBLE);
-				if (RadioService.STATE == RadioService.STATE_STARTED)
+				if (AbstractRadioService.isPlaying())
 					holder.play.setVisibility(View.VISIBLE);
+				if (AbstractRadioService.isRecording())
+					holder.record.setVisibility(View.VISIBLE);
 			}
 			
 			return convertView;
@@ -449,13 +501,34 @@ public abstract class AbstractRadioActivity extends SherlockActivity implements 
 		{
 			return true;
 		}
+		
+		@Override
+		public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) 
+		{
+			Station station = stations.get(groupPosition);
+			if (station != null)
+			{
+				Bitrate bitrate = station.getBitrates().get(childPosition);
+				if (bitrate != null)
+				{
+					AbstractRadioService.GROP = station.hashCode();
+					AbstractRadioService.CHILD = bitrate.hashCode();
+					Intent newIntent = new Intent(getApplicationContext(), getServiceClass());
+					newIntent.setAction(AbstractRadioService.ACTION_START);
+					newIntent.putExtra(AbstractRadioService.EXTRA_STRING_URL, bitrate.getUrl());
+					newIntent.putExtra(AbstractRadioService.EXTRA_STRING_NOTIFICATION, String.format("%s (%s  Ѕит/сек)", station.getName(), bitrate.getBitrate()));
+					startService(newIntent);
+				}
+			}
+			return false;
+		}
 	}
 	
 	private class StationViewHolder
 	{
 		TextView name;
 		ProgressBar progress;
-		ImageView play;
+		ImageView play, record;
 		CheckBox favorite;
 		
 		public StationViewHolder(View view)
@@ -463,6 +536,7 @@ public abstract class AbstractRadioActivity extends SherlockActivity implements 
 			name = (TextView) view.findViewById(R.id.item_station_name);
 			progress = (ProgressBar) view.findViewById(R.id.item_station_progress);
 			play = (ImageView) view.findViewById(R.id.item_station_play);
+			record = (ImageView) view.findViewById(R.id.item_station_record);
 			favorite = (CheckBox) view.findViewById(R.id.item_station_favorite);
 		}
 	}
@@ -471,13 +545,14 @@ public abstract class AbstractRadioActivity extends SherlockActivity implements 
 	{
 		TextView name;
 		ProgressBar progress;
-		ImageView play;
+		ImageView play, record;
 		
 		public BitrateViewHolder(View view)
 		{
 			name = (TextView) view.findViewById(R.id.item_bitrate_name);
 			progress = (ProgressBar) view.findViewById(R.id.item_bitrate_progress);
 			play = (ImageView) view.findViewById(R.id.item_bitrate_play);
+			record = (ImageView) view.findViewById(R.id.item_bitrate_record);
 		}
 	}
 }

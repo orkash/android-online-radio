@@ -10,6 +10,8 @@
     <string name="menu_stop">Стоп</string>
     <string name="menu_rate">Поставить оценку</string>
     <string name="menu_share">Рассказать друзьям</string>
+    <string name="menu_record">Запись</string>
+    <string name="menu_recordstop">Остановить запись</string>
     
     <string name="share">Я слушаю Online Radio на Android. Присоединяйся! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     

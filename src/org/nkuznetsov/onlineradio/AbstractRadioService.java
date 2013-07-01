@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.support.v4.app.NotificationCompat.Builder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -94,6 +95,10 @@ public abstract class AbstractRadioService extends Service implements OnErrorLis
 		Intent newIntent = new Intent(getApplicationContext(), AbstractRadioActivity.class);
 		newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0, newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		
+		
+		Builder builder = new Builder(this);
+		
 		Notification notification = new Notification(R.drawable.icon, text, 0);
 		notification.flags = notification.flags | Notification.FLAG_FOREGROUND_SERVICE;
 		notification.setLatestEventInfo(getApplicationContext(), getString(R.string.app_name), text, pi);

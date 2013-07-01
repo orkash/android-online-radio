@@ -1,57 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingBottom="2dp"
-    android:paddingLeft="5dp"
-    android:paddingRight="5dp"
-    android:paddingTop="2dp" >
-
-    <TextView
-        android:id="@+id/item_station_name"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:layout_centerVertical="true"
-        android:gravity="center_vertical"
-        android:text="TextView"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <CheckBox
-        android:id="@+id/item_station_favorite"
-        style="?android:attr/starStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:layout_marginLeft="5dp"
-        android:focusable="false" />
-
-    <ProgressBar
-        android:id="@+id/item_station_progress"
-        style="?android:attr/progressBarStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignWithParentIfMissing="true"
-        android:layout_centerVertical="true"
-        android:layout_toLeftOf="@id/item_station_favorite" />
-
-    <ImageView
-        android:id="@+id/item_station_play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignWithParentIfMissing="true"
-        android:layout_centerVertical="true"
-        android:layout_toLeftOf="@id/item_station_favorite"
-        android:src="@drawable/play" />
-
-    <ImageView
-        android:id="@+id/item_station_record"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignWithParentIfMissing="true"
-        android:layout_centerVertical="true"
-        android:layout_toLeftOf="@id/item_station_favorite"
-        android:src="@drawable/record" />
+<RelativeLayout
+  	xmlns:android="http://schemas.android.com/apk/res/android"
+  	android:orientation="vertical"
+  	android:layout_width="fill_parent" 
+  	android:layout_height="wrap_content" 
+  	android:paddingLeft="5dp" 
+  	android:paddingRight="5dp" 
+  	android:paddingBottom="2dp" 
+  	android:paddingTop="2dp">
+	<TextView 
+		android:textAppearance="?android:attr/textAppearanceMedium" 
+		android:layout_width="wrap_content" 
+		android:id="@+id/item_station_name" 
+		android:text="TextView"
+		android:layout_centerVertical="true"
+		android:layout_height="50dp" 
+		android:gravity="center_vertical"/>
+	
+	<CheckBox
+	    android:id="@+id/item_station_favorite"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_centerVertical="true"
+	    android:layout_alignParentRight="true"
+	    style="?android:attr/starStyle" 
+	    android:focusable="false"
+	    android:layout_marginLeft="5dp"/>
+	
+	<ProgressBar 
+		style="?android:attr/progressBarStyleSmall" 
+		android:layout_width="wrap_content" 
+		android:id="@+id/item_station_progress" 
+		android:layout_height="wrap_content" 
+		android:layout_centerVertical="true"
+		android:layout_toLeftOf="@id/item_station_favorite" 
+		android:layout_alignWithParentIfMissing="true"/>
+	
+	<ImageView 
+	    android:src="@drawable/play" 
+		android:layout_height="wrap_content" 
+		android:layout_width="wrap_content" 
+		android:layout_centerVertical="true" 
+		android:id="@+id/item_station_play" 
+		android:layout_toLeftOf="@id/item_station_favorite" 
+		android:layout_alignWithParentIfMissing="true"/>
 
 </RelativeLayout>

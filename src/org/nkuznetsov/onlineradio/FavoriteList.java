@@ -1,6 +1,7 @@
 package org.nkuznetsov.onlineradio;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,7 +13,7 @@ public class FavoriteList
 	private static final String FAVORITES_KEY = "favorites";
 	private static final String FAVORITES_SEPARATOR = ",";
 	
-	private static final Vector<String> favorites = new Vector<String>();
+	private static final List<String> favorites = new ArrayList<String>();
 	private static SharedPreferences preferences;
 	
 	public static void init(Context context)

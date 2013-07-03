@@ -29,6 +29,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	public final static String ACTION_STOP = "StopService";
 	public final static String EXTRA_STRING_NOTIFICATION = "ExtraNotification";
 	public final static String EXTRA_STRING_URL = "ExtraURL";
+	public final static String EXTRA_STRING_URLISFINAL = "ExtraURLisFinal";
 	
 	public final static int STATE_STARTED = 1;
 	public final static int STATE_STOPPED = 2;
@@ -201,7 +202,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 				try
 				{
 					setState(STATE_PREPARING);
-					String url = API.getStream(intent.getStringExtra(EXTRA_STRING_URL));
+					String url = intent.getBooleanExtra(EXTRA_STRING_URLISFINAL, false) ? intent.getStringExtra(EXTRA_STRING_URL) : API.getStream(intent.getStringExtra(EXTRA_STRING_URL));
 					MediaPlayer mp = MediaPlayer.create(getApplicationContext(), Uri.parse(url));
 					if (time == timestamp && STATE == STATE_PREPARING)
 					{

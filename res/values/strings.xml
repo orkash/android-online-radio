@@ -10,7 +10,35 @@
     <string name="menu_stop">Стоп</string>
     <string name="menu_rate">Поставить оценку</string>
     <string name="menu_share">Рассказать друзьям</string>
+    <string name="menu_add">Добавить станцию</string>
     
     <string name="share">Я слушаю Online Radio на Android. Присоединяйся! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     
+    <string name="divider_fav">Отмеченные</string>
+    <string name="divider_rambler">Rambler Radio</string>
+    <string name="divider_own">Мои станции</string>
+    
+    <string name="note_message" formatted="false">%s, %s</string>
+    
+   	<string name="kb_sec_format" formatted="false">%s КБит/сек</string>
+    <string name="kb_sec">КБит/сек</string>
+    
+    <string name="addstation_wrongname">Поле Название заполнено не верно</string>
+    <string name="addstation_wrongbitrate">Поле Битрейт заполнено не верно</string>
+    <string name="addstation_wrongurl">Поле URL заполнено не верно</string>
+    <string name="addstation_title">Название радиостанции</string>
+    <string name="addstation_bitrate">Битрейт</string>
+    <string name="addstation_url">URL потока</string>
+    <string name="addstation_add">Добавить</string>
+    <string name="addstation_cancel">Отменить</string>
+    
+    <string name="remstation_title">Удаление станции</string>
+    <string name="remstation_message" formatted="false">Вы действительно хотите удалить станцию %s?</string>
+    <string name="remstation_remove">Удалить</string>
+    <string name="remstation_cancel">Отменить</string>
+    
+    <string name="rembitrate_title">Удаление битрейта</string>
+    <string name="rembitrate_message" formatted="false">Вы действительно хотите удалить битрейт %s станции %s?</string>
+    <string name="rembitrate_remove">Удалить</string>
+    <string name="rembitrate_cancel">Отменить</string>
 </resources>

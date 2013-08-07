@@ -36,6 +36,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
@@ -78,6 +79,9 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
+
+        GA.init(this);
+        
         setContentView(R.layout.activity_radio);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         
@@ -90,6 +94,9 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
         message = (TextView) findViewById(R.id.activity_radio_message);
         progress = (ProgressBar) findViewById(R.id.activity_radio_progress);
         list = (ExpandableListView) findViewById(R.id.activity_radio_list);
+        list.setOnChildClickListener(RadioActivity.this);
+		list.setOnItemLongClickListener(RadioActivity.this);
+		list.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
     }
 	
 	@Override
@@ -111,6 +118,7 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 	protected void onStart()
 	{
 		super.onStart();
+		GA.trackPage("RadioActivity");
 		if (adapter == null) loadStations(ACTION_ACTIVITY_START);
 	}
 	
@@ -118,6 +126,8 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 	protected void onStop()
 	{
 		cancelLoadStations();
+		if (RadioService.STATE == RadioService.STATE_STOPPED) 
+			GA.closeSession();
 		super.onStop();
 	}
 	
@@ -160,19 +170,27 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 		{
 			case MENU_UPDATE:
 				loadStations(ACTION_UPDATE_LIST);
+				GA.trackButton("RadioActivity > Update");
 			case MENU_STOP:
 				if (RadioService.STATE != RadioService.STATE_STOPPED) 
 					RadioService.stopService(getApplicationContext());
+				GA.trackButton("RadioActivity > Stop");
 				break;
 			case MENU_SHARE:
 				Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
 				shareIntent.setType("text/plain");
 				shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.app_name));
 				shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, getString(R.string.share));
-				startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));
+				try
+				{
+					startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));
+				}
+				catch (Exception e) {}
+				GA.trackButton("RadioActivity > Share");
 				break;
 			case MENU_RATE:
 				startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
+				GA.trackButton("RadioActivity > Rate");
 				break;
 			case MENU_ADD:
 				
@@ -207,10 +225,11 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 						{
 							addOwnStation(name.getText().toString(), bitrate.getText().toString(), url.getText().toString());
 							dialog.dismiss();
+							GA.trackButton("RadioActivity > Add > Add");
 						}
 					}
 				});
-				
+				GA.trackButton("RadioActivity > Add");
 				break;
 		}
 		return true;
@@ -233,6 +252,7 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 				newIntent.putExtra(RadioService.EXTRA_STRING_URLISFINAL, OwnList.isOwn(station.getId()));
 				newIntent.putExtra(RadioService.EXTRA_STRING_NOTIFICATION, getString(R.string.note_message, station.getName(), getString(R.string.kb_sec_format, bitrate.getBitrate())));
 				startService(newIntent);
+				GA.trackButton("RadioActivity > Play");
 			}
 		}
 		return false;
@@ -241,58 +261,67 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 	@Override
 	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2, long id)
 	{
-		if (ExpandableListView.getPackedPositionType(id) == ExpandableListView.PACKED_POSITION_TYPE_GROUP)
-		{
-			final Station station = adapter.stations.get(ExpandableListView.getPackedPositionGroup(id));
-			if (OwnList.isOwn(station.getId()))
-			{
-				AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setTitle(R.string.remstation_title);
-				builder.setMessage(getString(R.string.remstation_message, station.getName()));
-				builder.setPositiveButton(R.string.remstation_remove, new DialogInterface.OnClickListener()
-				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						FavoriteList.remove(station.getId());
-						OwnList.remove(station.getId());
-						adapter.stations.remove(station);
-						adapter.notifyDataSetChanged();
-						saveOwnStations(getOwnStations());
-					}
-				});
-				builder.setNegativeButton(R.string.remstation_cancel, null);
-				builder.show();
-				return true;
-			}
-		}
-		
-		if (ExpandableListView.getPackedPositionType(id) == ExpandableListView.PACKED_POSITION_TYPE_CHILD)
-		{
-			final Station station = adapter.stations.get(ExpandableListView.getPackedPositionGroup(id));
-			
-			if (OwnList.isOwn(station.getId()))
-			{
-				final Bitrate bitrate = station.getBitrates().get(ExpandableListView.getPackedPositionChild(id));
-				AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setTitle(R.string.rembitrate_title);
-				builder.setMessage(getString(R.string.rembitrate_message, getString(R.string.kb_sec_format, bitrate.getBitrate()), station.getName()));
-				builder.setPositiveButton(R.string.rembitrate_remove, new DialogInterface.OnClickListener()
-				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						station.getBitrates().remove(bitrate);
-						adapter.notifyDataSetChanged();
-						saveOwnStations(getOwnStations());
-					}
-				});
-				builder.setNegativeButton(R.string.rembitrate_cancel, null);
-				builder.show();
-				return true;
-			}
-		}
-		
+        int positionType = ExpandableListView.getPackedPositionType(id);
+        final int positionGroup = ExpandableListView.getPackedPositionGroup(id);
+        
+        if (positionGroup > -1)
+        {
+        	final Station station = adapter.stations.get(positionGroup);
+        
+        	if (OwnList.isOwn(station.getId()))
+        	{
+        		if (positionType == ExpandableListView.PACKED_POSITION_TYPE_GROUP)
+        		{
+        			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    				builder.setTitle(R.string.remstation_title);
+    				builder.setMessage(getString(R.string.remstation_message, station.getName()));
+    				builder.setPositiveButton(R.string.remstation_remove, new DialogInterface.OnClickListener()
+    				{
+    					@Override
+    					public void onClick(DialogInterface dialog, int which)
+    					{
+    						list.collapseGroup(positionGroup);
+    						FavoriteList.remove(station.getId());
+    						OwnList.remove(station.getId());
+    						adapter.stations.remove(station);
+    						adapter.notifyDataSetChanged();
+    						saveOwnStations(getOwnStations());
+    						GA.trackButton("RadioActivity > Remove > Remove");
+    					}
+    				});
+    				builder.setNegativeButton(R.string.remstation_cancel, null);
+    				builder.show();
+    				GA.trackButton("RadioActivity > Remove");
+        			return true;
+        		}
+        
+        		if (positionType == ExpandableListView.PACKED_POSITION_TYPE_CHILD)
+        		{
+        			int positionChild = ExpandableListView.getPackedPositionChild(id);
+        			final Bitrate bitrate = station.getBitrates().get(positionChild);
+    				
+        			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    				builder.setTitle(R.string.rembitrate_title);
+    				builder.setMessage(getString(R.string.rembitrate_message, getString(R.string.kb_sec_format, bitrate.getBitrate()), station.getName()));
+    				builder.setPositiveButton(R.string.rembitrate_remove, new DialogInterface.OnClickListener()
+    				{
+    					@Override
+    					public void onClick(DialogInterface dialog, int which)
+    					{
+    						station.getBitrates().remove(bitrate);
+    						adapter.notifyDataSetChanged();
+    						saveOwnStations(getOwnStations());
+    						GA.trackButton("RadioActivity > Remove > Remove");
+    					}
+    				});
+    				builder.setNegativeButton(R.string.rembitrate_cancel, null);
+    				builder.show();
+    				GA.trackButton("RadioActivity > Remove");
+        			return true;
+        		}
+        	}
+        }
+        
 		return false;
 	}
 	
@@ -508,8 +537,6 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 					list.setVisibility(View.VISIBLE);
 					adapter = new StationsAdapter(stations);
 					list.setAdapter(adapter);
-					list.setOnChildClickListener(RadioActivity.this);
-					list.setOnItemLongClickListener(RadioActivity.this);
 				}
 				if (what == RESULT_FAILED)
 				{
@@ -534,8 +561,16 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 		@Override
 		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
 		{
-			if (isChecked) FavoriteList.add(id);
-			else FavoriteList.remove(id);
+			if (isChecked) 
+			{
+				FavoriteList.add(id);
+				GA.trackButton("RadioActivity > Favorite > Add");
+			}
+			else 
+			{
+				FavoriteList.remove(id);
+				GA.trackButton("RadioActivity > Favorite > Remove");
+			}
 			
 			adapter.notifyDataSetChanged();
 		}

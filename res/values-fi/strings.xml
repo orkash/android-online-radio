@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Russian Online Radio</string>
+    
+    <string name="error_server">Palvelu ei ole käytettävissä.\nVoit ladata luettelon asemien yhteydessä Internetiin.</string>
+    <string name="error_json">Ei voitu jäsentää tiedosto asemat yritä uudelleen.</string>
+    <string name="error_io">Virhe ladattaessa asemia.\nYritä päivittää asemalle.</string>
+   
+    <string name="menu_update">Update Station</string>
+    <string name="menu_stop">Stop</string>
+    <string name="menu_rate">Lisää arvostelu</string>
+    <string name="menu_share">Kerro ystävillesi</string>
+    <string name="menu_add">Lisää kanava</string>
+    
+    <string name="share">Kuuntelen Russian Online Radio Android. Liity jäseneksi! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    
+    <string name="divider_fav">Tähdellä</string>
+    <string name="divider_rambler">Rambler Radio</string>
+    <string name="divider_own">Oma asema</string>
+    
+    <string name="note_message" formatted="false">%s, %s</string>
+    
+   	<string name="kb_sec_format" formatted="false">%s КBit/sec</string>
+    <string name="kb_sec">КBit/sec</string>
+    
+    <string name="addstation_wrongname">Kentän nimi ei kelpaa</string>
+    <string name="addstation_wrongbitrate">Bitrate alalla ei ole voimassa</string>
+    <string name="addstation_wrongurl">URL kenttä ei ole voimassa</string>
+    <string name="addstation_title">Aseman nimi</string>
+    <string name="addstation_bitrate">Bitrate</string>
+    <string name="addstation_url">URL stream</string>
+    <string name="addstation_add">lisätä</string>
+    <string name="addstation_cancel">Peruuttaa</string>
+    
+    <string name="remstation_title">Poistaminen asema</string>
+    <string name="remstation_message" formatted="false">Oletko varma, että haluat poistaa kanavan %s?</string>
+    <string name="remstation_remove">Poistaa</string>
+    <string name="remstation_cancel">Peruuttaa</string>
+    
+    <string name="rembitrate_title">Poistaminen bitrate</string>
+    <string name="rembitrate_message" formatted="false">Oletko varma, että haluat poistaa %s bitrate asemalla %s?</string>
+    <string name="rembitrate_remove">Poistaa</string>
+    <string name="rembitrate_cancel">Peruuttaa</string>
+</resources>

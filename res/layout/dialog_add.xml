@@ -10,7 +10,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="@string/addstation_title" >
+        android:hint="@string/addstation_title"
+        android:imeOptions="actionNext"
+        android:inputType="textCapSentences" >
 
         <requestFocus />
     </AutoCompleteTextView>
@@ -27,6 +29,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:hint="@string/addstation_bitrate"
+            android:imeOptions="actionNext"
             android:inputType="number" />
 
         <TextView
@@ -42,6 +45,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:ems="10"
-        android:hint="@string/addstation_url" />
+        android:hint="@string/addstation_url"
+        android:imeOptions="actionDone"
+        android:inputType="textUri" />
 
 </LinearLayout>

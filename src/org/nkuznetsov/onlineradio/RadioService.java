@@ -239,6 +239,8 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		@Override
 		public void onReceive(Context context, Intent intent) 
 		{
+			if (intent == null || intent.getAction() == null) return;
+			
 			if (intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION))
 			{
 				NetworkInfo ni = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Radio Online ruso</string>
+    
+    <string name="error_server">El servicio no está disponible.\nPara descargar la lista de las estaciones conectadas a la Internet.</string>
+    <string name="error_json">No se pudo analizar estaciones de archivos vuelva a intentarlo.</string>
+    <string name="error_io">Estaciones de carga de error.\nIntente actualizar la estación.</string>
+   
+    <string name="menu_update">Update estación</string>
+    <string name="menu_stop">Deténgase</string>
+    <string name="menu_rate">Añadir votación</string>
+    <string name="menu_share">Dile a tus amigos</string>
+    <string name="menu_add">Añadir estación</string>
+    
+    <string name="share">Escucho Radio Online ruso en Android. Únete a mí! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    
+    <string name="divider_fav">Protagonizó</string>
+    <string name="divider_rambler">Rambler Radio</string>
+    <string name="divider_own">Mi estación</string>
+    
+    <string name="note_message" formatted="false">%s, %s</string>
+    
+   	<string name="kb_sec_format" formatted="false">%s Кbits/сек</string>
+    <string name="kb_sec">Кbits/сек</string>
+    
+    <string name="addstation_wrongname">El nombre del campo no es válido</string>
+    <string name="addstation_wrongbitrate">Campo Bitrate no es válida</string>
+    <string name="addstation_wrongurl">El campo URL no es válida</string>
+    <string name="addstation_title">El nombre de la emisora</string>
+    <string name="addstation_bitrate">Bitrate</string>
+    <string name="addstation_url">Corriente URL</string>
+    <string name="addstation_add">Añadir</string>
+    <string name="addstation_cancel">Cancelar</string>
+    
+    <string name="remstation_title">Estación de Extracción</string>
+    <string name="remstation_message" formatted="false">¿Está seguro que desea eliminar un %s estación?</string>
+    <string name="remstation_remove">Eliminar</string>
+    <string name="remstation_cancel">Cancelar</string>
+    
+    <string name="rembitrate_title">Extracción de la tasa de bits</string>
+    <string name="rembitrate_message" formatted="false">¿Estás seguro que quieres eliminar el bitrate %s %s estación?</string>
+    <string name="rembitrate_remove">Eliminar</string>
+    <string name="rembitrate_cancel">Cancelar</string>
+</resources>

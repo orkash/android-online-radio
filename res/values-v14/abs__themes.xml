@@ -3,6 +3,7 @@
 <resources>
     <style name="Sherlock.__Theme" parent="android:Theme.Holo">
     </style>
+
     <style name="Sherlock.__Theme.DarkActionBar" parent="android:Theme.Holo.Light.DarkActionBar">
         <!-- Useful for offsetting contents with an overlay action bar. -->
         <item name="actionBarSize">?android:attr/actionBarSize</item>
@@ -21,6 +22,4 @@
       <item name="android:windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.Sherlock.Dialog" parent="android:Theme.Holo.Dialog">
-    </style>
 </resources>

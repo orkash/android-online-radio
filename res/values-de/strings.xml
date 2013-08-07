@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Russian Online Radio</string>
+    
+    <string name="error_server">Der Service ist nicht verfügbar.\nUm die Liste der Stationen, die mit dem Internet herunterzuladen.</string>
+    <string name="error_json">Datei konnte nicht analysiert werden Stationen noch einmal versuchen.</string>
+    <string name="error_io">Fehler beim Laden Stationen.\nVersuchen Sie, die Station zu aktualisieren.</string>
+   
+    <string name="menu_update">Update-Bahnhof</string>
+    <string name="menu_stop">Stoppen</string>
+    <string name="menu_rate">Bewertung hinzufügen</string>
+    <string name="menu_share">Teilen</string>
+    <string name="menu_add">In Station</string>
+    
+    <string name="share">Ich höre Russian Online Radio auf Android. Begleiten Sie mich! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    
+    <string name="divider_fav">Favoriten</string>
+    <string name="divider_rambler">Rambler Radio</string>
+    <string name="divider_own">Meine Station</string>
+    
+    <string name="note_message" formatted="false">%s, %s</string>
+    
+   	<string name="kb_sec_format" formatted="false">%s Kbit/sec</string>
+    <string name="kb_sec">Kbit/sec</string>
+    
+    <string name="addstation_wrongname">Der Name des Feldes ist nicht gültig</string>
+    <string name="addstation_wrongbitrate">Bitrate Feld ist nicht gültig</string>
+    <string name="addstation_wrongurl">Das URL-Feld ist nicht gültig</string>
+    <string name="addstation_title">Der Sendername</string>
+    <string name="addstation_bitrate">Bitrate</string>
+    <string name="addstation_url">URL-Stream</string>
+    <string name="addstation_add">hinzufügen</string>
+    <string name="addstation_cancel">stornieren</string>
+    
+    <string name="remstation_title">Entfernen Station</string>
+    <string name="remstation_message" formatted="false">Sind Sie sicher, dass Sie eine Station %s löschen?</string>
+    <string name="remstation_remove">Entfernen</string>
+    <string name="remstation_cancel">Stornieren</string>
+    
+    <string name="rembitrate_title">Entfernen Sie die Bitrate</string>
+    <string name="rembitrate_message" formatted="false">Wollen Sie wirklich die Bitrate %s Station %s löschen?</string>
+    <string name="rembitrate_remove">Entfernen</string>
+    <string name="rembitrate_cancel">Stornieren</string>
+</resources>

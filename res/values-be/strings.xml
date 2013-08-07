@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Рускае Онлайн Радыё</string>
+    
+    <string name="error_server">Сэрвіс недаступны.\nДля загрузкі спісу станцый падключыцеся да Інтэрнэту.</string>
+    <string name="error_json">Не атрымалася прааналізаваць файл станцый, паспрабуйце яшчэ раз.</string>
+    <string name="error_io">Памылка загрузкі станцый.\nПаспрабуйце абнавіць станцыі.</string>
+   
+    <string name="menu_update">Aбнавіць станцыі</string>
+    <string name="menu_stop">Стоп</string>
+    <string name="menu_rate">Паставіць ацэнку</string>
+    <string name="menu_share">Hаспавесці сябрам</string>
+    <string name="menu_add">Дадаць станцыю</string>
+    
+    <string name="share">Я слухаю Рускае Онлайн Радыё на Android. Далучайся! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    
+    <string name="divider_fav">Адзначаныя</string>
+    <string name="divider_rambler">Rambler Radio</string>
+    <string name="divider_own">Мае станцыі</string>
+    
+    <string name="note_message" formatted="false">%s, %s</string>
+    
+   	<string name="kb_sec_format" formatted="false">%s Кбіт/сек</string>
+    <string name="kb_sec">Кбіт/сек</string>
+    
+    <string name="addstation_wrongname">Поле Назва запоўнена няправільна</string>
+    <string name="addstation_wrongbitrate">Поле Бітрэйт запоўнена няправільна</string>
+    <string name="addstation_wrongurl">Поле URL запоўнена няправільна</string>
+    <string name="addstation_title">Назва радыёстанцыі</string>
+    <string name="addstation_bitrate">Бітрэйт</string>
+    <string name="addstation_url">URL патоку</string>
+    <string name="addstation_add">Дадаць</string>
+    <string name="addstation_cancel">Aдмяніць</string>
+    
+    <string name="remstation_title">Выдаленне станцыі</string>
+    <string name="remstation_message" formatted="false">Вы сапраўды хочаце выдаліць станцыю %s?</string>
+    <string name="remstation_remove">Выдаліць</string>
+    <string name="remstation_cancel">Aдмяніць</string>
+    
+    <string name="rembitrate_title">Выдаленне бітрэйту</string>
+    <string name="rembitrate_message" formatted="false">Вы сапраўды хочаце выдаліць бітрэйт %s станцыі %s?</string>
+    <string name="rembitrate_remove">Выдаліць</string>
+    <string name="rembitrate_cancel">Aдмяніць</string>
+</resources>

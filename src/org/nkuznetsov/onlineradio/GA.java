@@ -75,4 +75,17 @@ public class GA
 		if (!activeSession) startSession();
 		tracker.sendEvent("ui_action", "event", label, 0L);
 	}
+	
+	public static void trackFatalException(String description)
+	{
+		if (!activeSession) startSession();
+		tracker.sendException(description, true);
+		closeSession();
+	}
+	
+	public static void trackException(String description)
+	{
+		if (!activeSession) startSession();
+		tracker.sendException(description, false);
+	}
 }

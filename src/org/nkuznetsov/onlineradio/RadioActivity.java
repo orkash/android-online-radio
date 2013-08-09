@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -25,6 +26,7 @@ import org.nkuznetsov.onlineradio.exceptions.GatewayTimeoutException;
 import org.nkuznetsov.onlineradio.exceptions.ServerErrorException;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -42,6 +44,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -170,11 +173,11 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 		{
 			case MENU_UPDATE:
 				loadStations(ACTION_UPDATE_LIST);
-				GA.trackButton("RadioActivity > Update");
+				GA.trackClick("RadioActivity > Update");
 			case MENU_STOP:
 				if (RadioService.STATE != RadioService.STATE_STOPPED) 
 					RadioService.stopService(getApplicationContext());
-				GA.trackButton("RadioActivity > Stop");
+				GA.trackClick("RadioActivity > Stop");
 				break;
 			case MENU_SHARE:
 				Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
@@ -186,50 +189,17 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 					startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));
 				}
 				catch (Exception e) {}
-				GA.trackButton("RadioActivity > Share");
+				GA.trackClick("RadioActivity > Share");
 				break;
 			case MENU_RATE:
 				startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
-				GA.trackButton("RadioActivity > Rate");
+				GA.trackClick("RadioActivity > Rate");
 				break;
 			case MENU_ADD:
-				
-				View view = LayoutInflater.from(this).inflate(R.layout.dialog_add, null);
-				
-				final AutoCompleteTextView name = (AutoCompleteTextView) view.findViewById(R.id.input_name);
-				List<String> names = new ArrayList<String>();
-				for (Station station : getOwnStations()) names.add(station.getName());
-				name.setAdapter(new ArrayAdapter<String>(this, R.layout.item_dropdown, names));
-				final EditText bitrate = (EditText) view.findViewById(R.id.input_bitrate);
-				final EditText url = (EditText) view.findViewById(R.id.input_url);
-				
-				AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setTitle(R.string.menu_add);
-				builder.setView(view);
-				builder.setPositiveButton(R.string.addstation_add, null);
-				builder.setNegativeButton(R.string.addstation_cancel, null);
-				final AlertDialog dialog = builder.show();
-				dialog.setCanceledOnTouchOutside(false);
-				dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new OnClickListener()
-				{
-					@Override
-					public void onClick(View v)
-					{
-						if (name.length() == 0)
-							Toast.makeText(RadioActivity.this, R.string.addstation_wrongname, Toast.LENGTH_SHORT).show();
-						else if (bitrate.length() == 0)
-							Toast.makeText(RadioActivity.this, R.string.addstation_wrongbitrate, Toast.LENGTH_SHORT).show();
-						else if (!Utils.isCorrectUrl(url.getText().toString()))
-							Toast.makeText(RadioActivity.this, R.string.addstation_wrongurl, Toast.LENGTH_SHORT).show();
-						else
-						{
-							addOwnStation(name.getText().toString(), bitrate.getText().toString(), url.getText().toString());
-							dialog.dismiss();
-							GA.trackButton("RadioActivity > Add > Add");
-						}
-					}
-				});
-				GA.trackButton("RadioActivity > Add");
+				if (adapter != null && adapter.stations != null)
+					new AddStationDialog(this).show();
+				else Toast.makeText(this, R.string.addstation_wait, Toast.LENGTH_LONG).show();
+				GA.trackClick("RadioActivity > Add");
 				break;
 		}
 		return true;
@@ -252,7 +222,7 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 				newIntent.putExtra(RadioService.EXTRA_STRING_URLISFINAL, OwnList.isOwn(station.getId()));
 				newIntent.putExtra(RadioService.EXTRA_STRING_NOTIFICATION, getString(R.string.note_message, station.getName(), getString(R.string.kb_sec_format, bitrate.getBitrate())));
 				startService(newIntent);
-				GA.trackButton("RadioActivity > Play");
+				GA.trackClick("RadioActivity > Play");
 			}
 		}
 		return false;
@@ -286,12 +256,12 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
     						adapter.stations.remove(station);
     						adapter.notifyDataSetChanged();
     						saveOwnStations(getOwnStations());
-    						GA.trackButton("RadioActivity > Remove > Remove");
+    						GA.trackClick("RadioActivity > Remove > Remove");
     					}
     				});
     				builder.setNegativeButton(R.string.remstation_cancel, null);
-    				builder.show();
-    				GA.trackButton("RadioActivity > Remove");
+    				builder.show().setVolumeControlStream(AudioManager.STREAM_MUSIC);
+    				GA.trackClick("RadioActivity > Remove");
         			return true;
         		}
         
@@ -311,12 +281,12 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
     						station.getBitrates().remove(bitrate);
     						adapter.notifyDataSetChanged();
     						saveOwnStations(getOwnStations());
-    						GA.trackButton("RadioActivity > Remove > Remove");
+    						GA.trackClick("RadioActivity > Remove > Remove");
     					}
     				});
     				builder.setNegativeButton(R.string.rembitrate_cancel, null);
-    				builder.show();
-    				GA.trackButton("RadioActivity > Remove");
+    				builder.show().setVolumeControlStream(AudioManager.STREAM_MUSIC);
+    				GA.trackClick("RadioActivity > Remove");
         			return true;
         		}
         	}
@@ -411,6 +381,89 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 	private void cancelLoadStations()
 	{
 		if (stationLoader != null && stationLoader.getStatus() == Status.RUNNING) stationLoader.cancel(true);
+	}
+	
+	private class AddStationDialog implements OnClickListener, DialogInterface.OnShowListener
+	{
+		AlertDialog dialog;
+		AutoCompleteTextView name;
+		EditText bitrate, url;
+		
+		public AddStationDialog(Context context)
+		{
+			AlertDialog.Builder builder = new AlertDialog.Builder(context);
+			
+			builder.setTitle(R.string.menu_add);
+			
+			View view = LayoutInflater.from(context).inflate(R.layout.dialog_add, null);
+			
+			name = (AutoCompleteTextView) view.findViewById(R.id.input_name);
+			List<String> names = new ArrayList<String>();
+			for (Station station : getOwnStations()) names.add(station.getName());
+			name.setAdapter(new ArrayAdapter<String>(context, R.layout.item_dropdown, names));
+			bitrate = (EditText) view.findViewById(R.id.input_bitrate);
+			url = (EditText) view.findViewById(R.id.input_url);
+			
+			builder.setView(view);
+			
+			builder.setPositiveButton(R.string.addstation_add, null);
+			builder.setNegativeButton(R.string.addstation_cancel, null);
+			
+			dialog = builder.create();
+			dialog.setOnShowListener(this);
+			dialog.setCanceledOnTouchOutside(false);
+			dialog.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+		}
+		
+		public void show()
+		{
+			dialog.show();
+		}
+
+		@Override
+		public void onShow(DialogInterface d)
+		{
+			Button positive = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+			
+			if (positive == null)
+			{
+				try
+				{
+					Field f = AlertDialog.class.getDeclaredField("mAlert");
+					f.setAccessible(true);
+					Object mAlert = f.get(dialog);
+					f = mAlert.getClass().getDeclaredField("mButtonPositive");
+					f.setAccessible(true);
+					positive = (Button) f.get(mAlert);
+				}
+				catch (Exception e)
+				{
+					GA.trackException(e.toString());
+				}
+			}
+			
+			if (positive == null)
+				positive = (Button) dialog.findViewById(android.R.id.button1);
+			
+			positive.setOnClickListener(this);
+		}
+		
+		@Override
+		public void onClick(View arg0)
+		{
+			if (name.length() == 0)
+				Toast.makeText(RadioActivity.this, R.string.addstation_wrongname, Toast.LENGTH_SHORT).show();
+			else if (bitrate.length() == 0)
+				Toast.makeText(RadioActivity.this, R.string.addstation_wrongbitrate, Toast.LENGTH_SHORT).show();
+			else if (!Utils.isCorrectUrl(url.getText().toString()))
+				Toast.makeText(RadioActivity.this, R.string.addstation_wrongurl, Toast.LENGTH_SHORT).show();
+			else
+			{
+				addOwnStation(name.getText().toString(), bitrate.getText().toString(), url.getText().toString());
+				dialog.dismiss();
+				GA.trackClick("RadioActivity > Add > Add");
+			}
+		}
 	}
 	
 	private class StationLoader extends AsyncTask<Integer, Void, Void>
@@ -564,12 +617,12 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 			if (isChecked) 
 			{
 				FavoriteList.add(id);
-				GA.trackButton("RadioActivity > Favorite > Add");
+				GA.trackClick("RadioActivity > Favorite > Add");
 			}
 			else 
 			{
 				FavoriteList.remove(id);
-				GA.trackButton("RadioActivity > Favorite > Remove");
+				GA.trackClick("RadioActivity > Favorite > Remove");
 			}
 			
 			adapter.notifyDataSetChanged();

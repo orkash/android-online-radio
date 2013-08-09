@@ -31,6 +31,7 @@
     <string name="addstation_url">URL потока</string>
     <string name="addstation_add">Добавить</string>
     <string name="addstation_cancel">Отменить</string>
+    <string name="addstation_wait">Сначала загрузите список станций</string>
     
     <string name="remstation_title">Удаление станции</string>
     <string name="remstation_message" formatted="false">Вы действительно хотите удалить станцию %s?</string>

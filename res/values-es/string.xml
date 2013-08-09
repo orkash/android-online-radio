@@ -31,6 +31,7 @@
     <string name="addstation_url">Corriente URL</string>
     <string name="addstation_add">Añadir</string>
     <string name="addstation_cancel">Cancelar</string>
+    <string name="addstation_wait">En primer lugar, descargar la lista de estaciones</string>
     
     <string name="remstation_title">Estación de Extracción</string>
     <string name="remstation_message" formatted="false">¿Está seguro que desea eliminar un %s estación?</string>

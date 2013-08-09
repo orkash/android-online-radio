@@ -31,6 +31,7 @@
     <string name="addstation_url">URL-Stream</string>
     <string name="addstation_add">hinzufügen</string>
     <string name="addstation_cancel">stornieren</string>
+    <string name="addstation_wait">Zuerst laden Sie die Liste der Stationen</string>
     
     <string name="remstation_title">Entfernen Station</string>
     <string name="remstation_message" formatted="false">Sind Sie sicher, dass Sie eine Station %s löschen?</string>

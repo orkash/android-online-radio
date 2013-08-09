@@ -31,6 +31,7 @@
     <string name="addstation_url">URL патоку</string>
     <string name="addstation_add">Дадаць</string>
     <string name="addstation_cancel">Aдмяніць</string>
+    <string name="addstation_wait">Спачатку загрузіце сьпіс станцыяў</string>
     
     <string name="remstation_title">Выдаленне станцыі</string>
     <string name="remstation_message" formatted="false">Вы сапраўды хочаце выдаліць станцыю %s?</string>

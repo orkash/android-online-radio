@@ -1,41 +1,54 @@
 package org.nkuznetsov.onlineradio;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 public class FavoriteList
 {	
-	private static final String FAVORITES_KEY = "favorites";
+	private static final String FAVORITES_KEY_10 = "favorites";
 	private static final String FAVORITES_SEPARATOR = ",";
 	
-	private static final List<String> favorites = new ArrayList<String>();
+	private static final String FAVORITES_KEY_11 = "favoritesSET";
+	
+	private static final Set<String> favorites = new HashSet<String>();
 	private static SharedPreferences preferences;
 	
 	public static void init(Context context)
 	{
 		preferences = PreferenceManager.getDefaultSharedPreferences(context);
-		if (preferences.contains(FAVORITES_KEY))
+		
+		if (preferences.contains(FAVORITES_KEY_10)) 
 		{
-			String[] tmpFavs = 
-					preferences.getString(FAVORITES_KEY, "").split(FAVORITES_SEPARATOR);
-			for (String tmpFav : tmpFavs) favorites.add(tmpFav);
+			String[] favs = preferences.getString(FAVORITES_KEY_10, "").split(FAVORITES_SEPARATOR);	
+			for (String fav : favs) favorites.add(fav);
 		}
+		
+		if (Build.VERSION.SDK_INT >= 11 && preferences.contains(FAVORITES_KEY_11)) 
+			favorites.addAll(preferences.getStringSet(FAVORITES_KEY_11, new HashSet<String>()));
 	}
 	
 	private static void save()
 	{
-		SharedPreferences.Editor editor = preferences.edit();
+		Editor editor = preferences.edit();
+		
 		if (favorites.size() > 0)
 		{
-			String tmpFav = TextUtils.join(FAVORITES_SEPARATOR, favorites.toArray());
-			editor.putString(FAVORITES_KEY, tmpFav);
+			if (Build.VERSION.SDK_INT < 11) editor.putString(FAVORITES_KEY_10, TextUtils.join(FAVORITES_SEPARATOR, favorites));
+			else editor.putStringSet(FAVORITES_KEY_11, favorites);
 		}
-		else editor.remove(FAVORITES_KEY);
+		else 
+		{
+			editor.remove(FAVORITES_KEY_11);
+			editor.remove(FAVORITES_KEY_10);
+		}
+		
 		editor.commit();
 	}
 	

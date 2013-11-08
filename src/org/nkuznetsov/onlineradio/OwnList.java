@@ -1,6 +1,7 @@
 package org.nkuznetsov.onlineradio;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import android.content.Context;
@@ -20,21 +21,14 @@ public class OwnList
 	{
 		preferences = PreferenceManager.getDefaultSharedPreferences(context);
 		if (preferences.contains(OWNS_KEY))
-		{
-			String[] tmpFavs = 
-					preferences.getString(OWNS_KEY, "").split(OWNS_SEPARATOR);
-			for (String tmpFav : tmpFavs) owns.add(tmpFav);
-		}
+			owns.addAll(Arrays.asList(preferences.getString(OWNS_KEY, "").split(OWNS_SEPARATOR)));
 	}
 	
 	private static void save()
 	{
 		SharedPreferences.Editor editor = preferences.edit();
 		if (owns.size() > 0)
-		{
-			String tmpFav = TextUtils.join(OWNS_SEPARATOR, owns.toArray());
-			editor.putString(OWNS_KEY, tmpFav);
-		}
+			editor.putString(OWNS_KEY, TextUtils.join(OWNS_SEPARATOR, owns));
 		else editor.remove(OWNS_KEY);
 		editor.commit();
 	}

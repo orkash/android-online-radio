@@ -54,7 +54,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	public void onCreate() 
 	{
 		super.onCreate();
-		serviceReceiver = new ServiceReceiver(this);
+		serviceReceiver = new ServiceReceiver();
 	}
 	
 	@Override
@@ -71,21 +71,13 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	
 	public void registerServiceReceiver()
 	{
-		unregisterServiceReceiver();
-		
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-		filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-		registerReceiver(serviceReceiver, filter);
+		serviceReceiver.unregister();
+		serviceReceiver.register();
 	}
 	
 	public void unregisterServiceReceiver()
 	{
-		try
-		{
-			unregisterReceiver(serviceReceiver);
-		}
-		catch (Exception e) {}
+		serviceReceiver.unregister();
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -159,13 +151,14 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 				startForeground(intent.getStringExtra(EXTRA_STRING_NOTIFICATION));
 				lock();
 				registerServiceReceiver();
-				if (serviceReceiver.isAllowPlay(this)) new PrepareAndPlay(intent).start();
+				if (serviceReceiver.isAllowPlay()) new PrepareAndPlay(intent).start();
 				else stopPlayback();
 				return START_STICKY;
 			}
 			
 			if (intent.getAction().equals(ACTION_STOP))
 			{
+				lastIntent = null;
 				stopPlayback();
 				unregisterServiceReceiver();
 				unlock();
@@ -227,62 +220,119 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	
 	private class ServiceReceiver extends BroadcastReceiver
 	{		
-		private boolean isConnected;
-		private boolean isActiveCall;
+		private NetworkInfo activeNetwork;
+        private boolean isActiveCall;
 		
-		public ServiceReceiver(Context context)
+		public ServiceReceiver()
 		{
-			isConnected = isActiveConnection(context);
-			isActiveCall = isActiveCall(context);
+			activeNetwork = getActivNetwork();
+            isActiveCall = isActiveCall();
 		}
 		
 		@Override
 		public void onReceive(Context context, Intent intent) 
 		{
 			if (intent == null || intent.getAction() == null) return;
-			
-			if (intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION))
-			{
-				NetworkInfo ni = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
-				boolean newIsConnected = ni.isConnected();
-				if (isConnected == newIsConnected) return;
-				isConnected = newIsConnected;
-			}
-			
-			if (intent.getAction().equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED))
-			{
-				boolean newIsActiveCall = isActiveCall(context);
-				if (isActiveCall == newIsActiveCall) return;
-				isActiveCall = newIsActiveCall;
-			}
-			
-			if (isActiveCall || !isConnected) stopPlayback();
-			else if (lastIntent != null)
-			{
-				startService(lastIntent);
-				lastIntent = null;
-			}
+	           
+            if (intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION))
+            {
+            	NetworkInfo ni = getActivNetwork();
+            	
+            	if (ni != null)
+            	{
+            		if (activeNetwork == null)
+            		{
+            			if (ni.isConnected() && !isActiveCall() && STATE == STATE_PREPARING && lastIntent != null)
+            			{
+            				startService(lastIntent);
+            				lastIntent = null;
+            			}
+            		}
+            		else
+            		{
+            			if (activeNetwork.getType() == ni.getType())
+            			{
+            				if (ni.isConnected() && !activeNetwork.isConnected() && !isActiveCall() && 
+            						STATE == STATE_PREPARING && lastIntent != null)
+            				{
+                				startService(lastIntent);
+                				lastIntent = null;
+            				}
+            			}
+            			else if (ni.isConnected())
+            			{
+            				stopPlayback();
+            				if (!isActiveCall() && lastIntent != null)
+            				{
+            					startService(lastIntent);
+                				lastIntent = null;
+            				}
+            			}
+            		}
+            	}
+            	else if (activeNetwork != null) stopPlayback();
+            	
+            	activeNetwork = ni;
+            }
+           
+            if (intent.getAction().equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED))
+            {
+                boolean newIsActiveCall = isActiveCall();
+                if (isActiveCall == newIsActiveCall) return;
+                isActiveCall = newIsActiveCall;
+            
+                if (isActiveCall) stopPlayback();
+                else
+                {
+                	if (activeNetwork != null && activeNetwork.isConnected() && STATE == STATE_PREPARING && lastIntent != null)
+                	{
+                		startService(lastIntent);
+        				lastIntent = null;
+                	}
+                }
+            }
 		}
 		
-		public boolean isAllowPlay(Context context)
+		public boolean isAllowPlay()
 		{
-			isConnected = isActiveConnection(context);
-			isActiveCall = isActiveCall(context);
-			return (!isActiveCall && isConnected);
+			activeNetwork = getActivNetwork();
+            isActiveCall = isActiveCall();
+            return !isActiveCall && (activeNetwork != null && activeNetwork.isConnected());
 		}
 		
-		private boolean isActiveCall(Context context)
+		private boolean isActiveCall()
 		{
-			TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-			return (tm.getCallState() == TelephonyManager.CALL_STATE_IDLE) ? false : true;
+			TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+			return tm.getCallState() != TelephonyManager.CALL_STATE_IDLE;
 		}
 		
-		private boolean isActiveConnection(Context context)
+		private NetworkInfo getActivNetwork()
 		{
-			ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo ni = cm.getActiveNetworkInfo();
-			if (ni != null) return ni.isConnected();
-			return false;
+			ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+			NetworkInfo[] nis = cm.getAllNetworkInfo();
+			for (NetworkInfo ni : nis) if (ni.isConnected()) return ni;
+			return null;
+		}
+		
+		public void register()
+		{
+			try
+			{
+				IntentFilter intentFilter = new IntentFilter();
+				intentFilter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
+				intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+				registerReceiver(this, intentFilter);
+			}
+			catch (Exception e) {}
+		}
+		
+		public void unregister()
+		{
+			try
+			{
+				unregisterReceiver(this);
+			}
+			catch (Exception e) {}
 		}
 	}
 	

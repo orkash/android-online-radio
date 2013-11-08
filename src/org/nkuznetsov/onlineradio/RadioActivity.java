@@ -192,7 +192,11 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 				GA.trackClick("RadioActivity > Share");
 				break;
 			case MENU_RATE:
-				startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
+				try
+				{
+					startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
+				}
+				catch (Exception e) {}
 				GA.trackClick("RadioActivity > Rate");
 				break;
 			case MENU_ADD:

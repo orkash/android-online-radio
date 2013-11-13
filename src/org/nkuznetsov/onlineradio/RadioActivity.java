@@ -34,6 +34,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -121,7 +123,7 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 	protected void onStart()
 	{
 		super.onStart();
-		GA.trackPage("RadioActivity");
+		GA.startActivity("RadioActivity");
 		if (adapter == null) loadStations(ACTION_ACTIVITY_START);
 	}
 	
@@ -129,8 +131,7 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 	protected void onStop()
 	{
 		cancelLoadStations();
-		if (RadioService.STATE == RadioService.STATE_STOPPED) 
-			GA.closeSession();
+		GA.stopActivity(RadioService.STATE == RadioService.STATE_STOPPED);
 		super.onStop();
 	}
 	
@@ -212,6 +213,7 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 				
 			case MENU_DONATE:
 				startActivity(new Intent(this, DonateActivity.class));
+				GA.trackClick("RadioActivity > Donate");
 				break;
 		}
 		return true;
@@ -395,11 +397,12 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 		if (stationLoader != null && stationLoader.getStatus() == Status.RUNNING) stationLoader.cancel(true);
 	}
 	
-	private class AddStationDialog implements OnClickListener, DialogInterface.OnShowListener
+	private class AddStationDialog implements OnClickListener, TextWatcher
 	{
 		AlertDialog dialog;
 		AutoCompleteTextView name;
 		EditText bitrate, url;
+		boolean needSetOnClickListener = true;
 		
 		public AddStationDialog(Context context)
 		{
@@ -413,8 +416,11 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 			List<String> names = new ArrayList<String>();
 			for (Station station : getOwnStations()) names.add(station.getName());
 			name.setAdapter(new ArrayAdapter<String>(context, R.layout.item_dropdown, names));
+			name.addTextChangedListener(this);
 			bitrate = (EditText) view.findViewById(R.id.input_bitrate);
+			bitrate.addTextChangedListener(this);
 			url = (EditText) view.findViewById(R.id.input_url);
+			url.addTextChangedListener(this);
 			
 			builder.setView(view);
 			
@@ -422,7 +428,6 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 			builder.setNegativeButton(R.string.addstation_cancel, null);
 			
 			dialog = builder.create();
-			dialog.setOnShowListener(this);
 			dialog.setCanceledOnTouchOutside(false);
 			dialog.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		}
@@ -433,8 +438,18 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 		}
 
 		@Override
-		public void onShow(DialogInterface d)
+		public void afterTextChanged(Editable arg0) {}
+
+		@Override
+		public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {}
+
+		@Override
+		public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) 
 		{
+			if (!needSetOnClickListener) return;
+			
+			needSetOnClickListener = false;
+			
 			Button positive = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
 			
 			if (positive == null)

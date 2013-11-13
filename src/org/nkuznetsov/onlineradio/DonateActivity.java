@@ -14,7 +14,6 @@ import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -59,6 +58,22 @@ public class DonateActivity extends Activity
 		labelDonate = (TextView) findViewById(R.id.label_donate);
 		
 		bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND"), mServiceConn, Context.BIND_AUTO_CREATE);
+	}
+	
+	@Override
+	protected void onStart() 
+	{
+		super.onStart();
+		
+		GA.startActivity("DonateActivity");
+	}
+	
+	@Override
+	protected void onStop() 
+	{
+		GA.stopActivity(true);
+		
+		super.onStop();
 	}
 	
 	ServiceConnection mServiceConn = new ServiceConnection() 
@@ -188,6 +203,7 @@ public class DonateActivity extends Activity
 				{
 					PendingIntent pendingIntent = bundle.getParcelable("BUY_INTENT");
 					startIntentSenderForResult(pendingIntent.getIntentSender(), 1001, new Intent(), 0, 0, 0);
+					GA.trackClick("DonateActivity > " + sku);
 				}
 			}
 			catch (Exception e)

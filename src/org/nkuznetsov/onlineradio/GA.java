@@ -15,6 +15,8 @@ public class GA
 	private static Tracker tracker;
 	private static boolean activeSession = false;
 	
+	private static int activityLevel = 0;
+	
 	public static void init(Context context)
 	{
 		if (tracker == null)
@@ -47,6 +49,18 @@ public class GA
 			GAServiceManager.getInstance().dispatch();
 			activeSession = false;
 		}
+	}
+	
+	public static void startActivity(String name)
+	{
+		trackPage(name);
+		activityLevel ++;
+	}
+	
+	public static void stopActivity(boolean closeSessionIfLast)
+	{
+		activityLevel --;
+		if (closeSessionIfLast && activityLevel == 0) closeSession();
 	}
 	
 	public static void trackPage(String page)

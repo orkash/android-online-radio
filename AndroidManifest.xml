@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.nkuznetsov.onlineradio"
-    android:versionCode="142"
-    android:versionName="1.4.2" >
+    android:versionCode="144"
+    android:versionName="1.4.4" >
 
     <uses-sdk
         android:minSdkVersion="7"
-        android:targetSdkVersion="16" />
+        android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="com.android.vending.BILLING" />
 
     <uses-feature
         android:name="android.hardware.telephony"
@@ -35,6 +36,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="org.nkuznetsov.onlineradio.DonateActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Sherlock.NoActionBar" />
 
         <service android:name="org.nkuznetsov.onlineradio.RadioService" />
     </application>

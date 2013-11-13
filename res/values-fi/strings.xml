@@ -2,6 +2,9 @@
 <resources>
     <string name="app_name">Russian Online Radio</string>
     
+    <string name="donate_01">Ole hyvä ja lahjoita jos haluat Russian Online Radio ja haluavat tukea minua!</string>
+    <string name="donate_02">Lahjoittaa %s</string>
+    
     <string name="error_server">Palvelu ei ole käytettävissä.\nVoit ladata luettelon asemien yhteydessä Internetiin.</string>
     <string name="error_json">Ei voitu jäsentää tiedosto asemat yritä uudelleen.</string>
     <string name="error_io">Virhe ladattaessa asemia.\nYritä päivittää asemalle.</string>

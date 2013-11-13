@@ -2,6 +2,9 @@
 <resources>
     <string name="app_name">Russian Online Radio</string>
     
+    <string name="donate_01">Bitte spenden Sie, wenn Sie Russian Online Radio und wie wollen um mich zu unterstützen!</string>
+    <string name="donate_02">Spenden %s</string>
+    
     <string name="error_server">Der Service ist nicht verfügbar.\nUm die Liste der Stationen, die mit dem Internet herunterzuladen.</string>
     <string name="error_json">Datei konnte nicht analysiert werden Stationen noch einmal versuchen.</string>
     <string name="error_io">Fehler beim Laden Stationen.\nVersuchen Sie, die Station zu aktualisieren.</string>

@@ -2,6 +2,9 @@
 <resources>
     <string name="app_name">Онлайн Радио</string>
     
+    <string name="donate_01">Если вам нравится Онлайн Радио вы можете отблагодарить меня материально!</string>
+    <string name="donate_02">Дать %s</string>
+    
     <string name="error_server">Сервис недоступен.\nДля загрузки списка станций подключитесь к Интернету.</string>
     <string name="error_json">Не удалось проанализировать файл станций, попробуйте ещё раз.</string>
     <string name="error_io">Ошибка загрузки станций.\nПопробуйте обновить станции.</string>

@@ -139,6 +139,7 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 	private static final int MENU_RATE = 3;
 	private static final int MENU_SHARE = 4;
 	private static final int MENU_ADD = 5;
+	private static final int MENU_DONATE = 6;
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
@@ -162,6 +163,9 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 		MenuItem rate = menu.add(0, MENU_RATE, 4, getString(R.string.menu_rate));
 		rate.setIcon(R.drawable.ic_rate);
 		rate.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+		
+		MenuItem donate = menu.add(0, MENU_DONATE, 5, "Donate");
+		donate.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
 		
 		return true;
 	}
@@ -204,6 +208,10 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 					new AddStationDialog(this).show();
 				else Toast.makeText(this, R.string.addstation_wait, Toast.LENGTH_LONG).show();
 				GA.trackClick("RadioActivity > Add");
+				break;
+				
+			case MENU_DONATE:
+				startActivity(new Intent(this, DonateActivity.class));
 				break;
 		}
 		return true;

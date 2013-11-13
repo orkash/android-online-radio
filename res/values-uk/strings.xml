@@ -2,6 +2,9 @@
 <resources>
     <string name="app_name">Російське Онлайн Радіо</string>
     
+    <string name="donate_01">Якщо вам подобається Російське Онлайн Радіо ви можете віддячити мене матеріально!</string>
+    <string name="donate_02">Дати %s</string>
+    
     <string name="error_server">Сервіс недоступний.\nДля завантаження списку станцій підключіться до Інтернету.</string>
     <string name="error_json">Не вдалося проаналізувати файл станцій, спробуйте ще раз.</string>
     <string name="error_io">Помилка завантаження станцій.\nСпробуйте оновити станції.</string>

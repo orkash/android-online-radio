@@ -4,6 +4,8 @@
     
     <string name="donate_01">Если вам нравится Онлайн Радио вы можете отблагодарить меня материально!</string>
     <string name="donate_02">Дать %s</string>
+    <string name="donate_03">Спасибо</string>
+    <string name="donate_04">Произошла ошибка, попробуйте ещё раз</string>
     
     <string name="error_server">Сервис недоступен.\nДля загрузки списка станций подключитесь к Интернету.</string>
     <string name="error_json">Не удалось проанализировать файл станций, попробуйте ещё раз.</string>
@@ -14,6 +16,7 @@
     <string name="menu_rate">Поставить оценку</string>
     <string name="menu_share">Рассказать друзьям</string>
     <string name="menu_add">Добавить станцию</string>
+    <string name="menu_donate">Отблагодарить</string>
     
     <string name="share">Я слушаю Online Radio на Android. Присоединяйся! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     

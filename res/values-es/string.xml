@@ -4,6 +4,8 @@
     
     <string name="donate_01">Por favor, donar si te gusta Radio Online ruso y quieres apoyarme!</string>
     <string name="donate_02">Done %s</string>
+    <string name="donate_03">Gracias</string>
+    <string name="donate_04">Se ha producido un error, inténtalo de nuevo</string>
     
     <string name="error_server">El servicio no está disponible.\nPara descargar la lista de las estaciones conectadas a la Internet.</string>
     <string name="error_json">No se pudo analizar estaciones de archivos vuelva a intentarlo.</string>
@@ -14,6 +16,7 @@
     <string name="menu_rate">Añadir votación</string>
     <string name="menu_share">Dile a tus amigos</string>
     <string name="menu_add">Añadir estación</string>
+    <string name="menu_donate">Donar</string>
     
     <string name="share">Escucho Radio Online ruso en Android. Únete a mí! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     

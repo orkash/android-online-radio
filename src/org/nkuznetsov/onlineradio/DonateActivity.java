@@ -14,20 +14,23 @@ import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.vending.billing.IInAppBillingService;
 
 public class DonateActivity extends Activity
 {
-	private static final String DONATE_1 = "DONATE_1";
-	private static final String DONATE_2 = "DONATE_2";
-	private static final String DONATE_3 = "DONATE_3";
+	private static final String DONATE_1 = "donate_1";
+	private static final String DONATE_2 = "donate_2";
+	private static final String DONATE_3 = "donate_3";
 	
 	private static final  ArrayList<String> skuList = new ArrayList<String>();
 	
@@ -40,6 +43,7 @@ public class DonateActivity extends Activity
 	
 	View progress;
 	LinearLayout buttons;
+	TextView labelDonate;
 	
 	IInAppBillingService mService;
 	
@@ -52,15 +56,9 @@ public class DonateActivity extends Activity
 		
 		progress = findViewById(R.id.progress);
 		buttons = (LinearLayout) findViewById(R.id.buttons);
+		labelDonate = (TextView) findViewById(R.id.label_donate);
 		
 		bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND"), mServiceConn, Context.BIND_AUTO_CREATE);
-	}
-	
-	protected void onPostCreate(Bundle savedInstanceState) 
-	{
-		super.onPostCreate(savedInstanceState);
-		
-		new GetSkuTask().execute();
 	}
 	
 	ServiceConnection mServiceConn = new ServiceConnection() 
@@ -69,6 +67,7 @@ public class DonateActivity extends Activity
 	   public void onServiceConnected(ComponentName name, IBinder service) 
 	   {
 	       mService = IInAppBillingService.Stub.asInterface(service);
+	       new GetSkuTask().execute();
 	   }
 	   
 	   @Override
@@ -92,12 +91,10 @@ public class DonateActivity extends Activity
 		{
 			if (resultCode == RESULT_OK) 
 			{
-				// TODO: show success
+				Toast.makeText(this, R.string.donate_03, Toast.LENGTH_LONG).show();
+				finish();
 			}
-			else
-			{
-				// TODO: show error
-			}
+			else labelDonate.setText(R.string.donate_04);
 		}
 	}
 	
@@ -135,7 +132,7 @@ public class DonateActivity extends Activity
 			}
 			catch (Exception e) 
 			{
-				GA.trackException(e.toString());
+				GA.trackException(e);
 			}
 			
 			return null;
@@ -150,7 +147,7 @@ public class DonateActivity extends Activity
 			if (skus != null)
 			{
 				int dp10 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
-				int dp150 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 150, getResources().getDisplayMetrics());
+				int dp190 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 190, getResources().getDisplayMetrics());
 				
 				LayoutParams lp = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 				lp.topMargin = dp10;
@@ -162,16 +159,13 @@ public class DonateActivity extends Activity
 					{
 						Button btn = new Button(DonateActivity.this);
 						btn.setText(getString(R.string.donate_02, sku.price));
-						btn.setMinWidth(dp150);
+						btn.setMinWidth(dp190);
 						btn.setOnClickListener(new OnDonateClickListener(mySku));
 						buttons.addView(btn, new LayoutParams(lp));
 					}
 				}
 			}
-			else
-			{
-				// TODO: process error sku
-			}
+			else labelDonate.setText(R.string.donate_04);
 		}
 	}
 	
@@ -198,7 +192,7 @@ public class DonateActivity extends Activity
 			}
 			catch (Exception e)
 			{
-				GA.trackException(e.toString());
+				GA.trackException(e);
 			}
 		}
 	}
@@ -230,7 +224,7 @@ public class DonateActivity extends Activity
 			}
 			catch (Exception e)
 			{
-				GA.trackException(e.toString());
+				GA.trackException(e);
 			}
 			
 			return null;

@@ -164,7 +164,7 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 		rate.setIcon(R.drawable.ic_rate);
 		rate.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
 		
-		MenuItem donate = menu.add(0, MENU_DONATE, 5, "Donate");
+		MenuItem donate = menu.add(0, MENU_DONATE, 5, getString(R.string.menu_donate));
 		donate.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
 		
 		return true;
@@ -450,7 +450,7 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 				}
 				catch (Exception e)
 				{
-					GA.trackException(e.toString());
+					GA.trackException(e);
 				}
 			}
 			

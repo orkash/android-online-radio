@@ -1,5 +1,8 @@
 package org.nkuznetsov.onlineradio;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import android.content.Context;
 
 import com.google.analytics.tracking.android.ExceptionReporter;
@@ -87,5 +90,14 @@ public class GA
 	{
 		if (!activeSession) startSession();
 		tracker.sendException(description, false);
+	}
+	
+	public static void trackException(Exception e)
+	{
+		StringWriter sw = new StringWriter();
+		e.printStackTrace(new PrintWriter(sw));
+		
+		if (!activeSession) startSession();
+		tracker.sendException(sw.toString(), false);
 	}
 }

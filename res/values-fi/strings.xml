@@ -4,6 +4,8 @@
     
     <string name="donate_01">Ole hyvä ja lahjoita jos haluat Russian Online Radio ja haluavat tukea minua!</string>
     <string name="donate_02">Lahjoittaa %s</string>
+    <string name="donate_03">Kiitos</string>
+    <string name="donate_04">Virhe, yritä uudelleen</string>
     
     <string name="error_server">Palvelu ei ole käytettävissä.\nVoit ladata luettelon asemien yhteydessä Internetiin.</string>
     <string name="error_json">Ei voitu jäsentää tiedosto asemat yritä uudelleen.</string>
@@ -14,6 +16,7 @@
     <string name="menu_rate">Lisää arvostelu</string>
     <string name="menu_share">Kerro ystävillesi</string>
     <string name="menu_add">Lisää kanava</string>
+    <string name="menu_donate">Lahjoittaa</string>
     
     <string name="share">Kuuntelen Russian Online Radio Android. Liity jäseneksi! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     

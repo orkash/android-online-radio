@@ -4,6 +4,8 @@
     
     <string name="donate_01">Please donate if you like Russian Online Radio and want to support me!</string>
     <string name="donate_02">Donate %s</string>
+    <string name="donate_03">Thank you</string>
+    <string name="donate_04">An error has occurred, please try again</string>
     
     <string name="error_server">Service is not available.\nTo download the stations list you must connect to the Internet.</string>
     <string name="error_json">Could not parse file stations try again.</string>
@@ -14,6 +16,7 @@
     <string name="menu_rate">Rate</string>
     <string name="menu_share">Share</string>
     <string name="menu_add">Add station</string>
+    <string name="menu_donate">Donate</string>
     
     <string name="share">I\'m listening to Russian Online Radio on Android. Join me! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     

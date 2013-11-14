@@ -129,13 +129,17 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	@Override
 	public void onCompletion(MediaPlayer arg0) 
 	{
-		startService(lastIntent);
+		if (lastIntent != null) startService(lastIntent);
 	}
 
 	@Override
 	public boolean onError(MediaPlayer arg0, int arg1, int arg2) 
 	{
-		startService(lastIntent);
+		if (lastIntent != null) 
+		{
+			startService(lastIntent);
+			return true;
+		}
 		return false;
 	}
 	

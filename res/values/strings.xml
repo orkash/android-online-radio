@@ -29,9 +29,9 @@
    	<string name="kb_sec_format" formatted="false">%s KBit/sec</string>
     <string name="kb_sec">KBit/sec</string>
     
-    <string name="addstation_wrongname">The field name is not valid</string>
+    <string name="addstation_wrongname">Name field is not valid</string>
     <string name="addstation_wrongbitrate">Bitrate field is not valid</string>
-    <string name="addstation_wrongurl">The URL field is not valid</string>
+    <string name="addstation_wrongurl">URL field is not valid</string>
     <string name="addstation_title">Station name</string>
     <string name="addstation_bitrate">Bitrate</string>
     <string name="addstation_url">URL stream</string>

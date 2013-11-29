@@ -29,9 +29,9 @@
    	<string name="kb_sec_format" formatted="false">%s Кbits/сек</string>
     <string name="kb_sec">Кbits/сек</string>
     
-    <string name="addstation_wrongname">El nombre del campo no es válido</string>
+    <string name="addstation_wrongname">Campo Nombre no es válido</string>
     <string name="addstation_wrongbitrate">Campo Bitrate no es válida</string>
-    <string name="addstation_wrongurl">El campo URL no es válida</string>
+    <string name="addstation_wrongurl">Campo URL no es válida</string>
     <string name="addstation_title">El nombre de la emisora</string>
     <string name="addstation_bitrate">Bitrate</string>
     <string name="addstation_url">Corriente URL</string>

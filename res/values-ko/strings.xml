@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Russian Online Radio</string>
+    
+    <string name="donate_01">러시아어 온라인 라디오와 같은 당신과 저를 지원하려는 경우 기부 해주세요!</string>
+    <string name="donate_02">기부 %s</string>
+    <string name="donate_03">감사합니다</string>
+    <string name="donate_04">오류가 발생했습니다, ​​다시 시도하십시오</string>
+    
+    <string name="error_server">서비스를 사용할 수 없습니다.\n방송국 목록을 다운로드하려면 인터넷에 연결해야합니다.</string>
+    <string name="error_json">파일을 구문 분석 할 수 없습니다 스테이션 다시 시도하십시오.</string>
+    <string name="error_io">오류 로딩 스테이션.\n역을 업데이트하려고합니다.</string>
+   
+    <string name="menu_update">업데이트 역</string>
+    <string name="menu_stop">중지</string>
+    <string name="menu_rate">율</string>
+    <string name="menu_share">주</string>
+    <string name="menu_add">역 추가</string>
+    <string name="menu_donate">기부</string>
+    
+    <string name="share">나는 안드로이드 러시아어 온라인 라디오를 듣고 있어요. 나에 가입하세요! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    
+    <string name="divider_fav">별표</string>
+    <string name="divider_rambler">Rambler Radio</string>
+    <string name="divider_own">내 역</string>
+    
+    <string name="note_message" formatted="false">%s, %s</string>
+    
+   	<string name="kb_sec_format" formatted="false">%s KBit/sec</string>
+    <string name="kb_sec">KBit/sec</string>
+    
+    <string name="addstation_wrongname">이름 필드가 유효하지 않습니다</string>
+    <string name="addstation_wrongbitrate">비트 레이트 필드가 유효하지 않습니다</string>
+    <string name="addstation_wrongurl">URL 필드가 유효하지 않습니다</string>
+    <string name="addstation_title">역 이름</string>
+    <string name="addstation_bitrate">비트 레이트</string>
+    <string name="addstation_url">URL 스트림</string>
+    <string name="addstation_add">추가</string>
+    <string name="addstation_cancel">취소</string>
+    <string name="addstation_wait">다운로드 스테이션은 첫 번째 목록</string>
+    
+    <string name="remstation_title">역 제거</string>
+    <string name="remstation_message" formatted="false">당신은 정말 %s 스테이션을 제거 하시겠습니까?</string>
+    <string name="remstation_remove">제거</string>
+    <string name="remstation_cancel">취소</string>
+    
+    <string name="rembitrate_title">비트 레이트를 제거</string>
+    <string name="rembitrate_message" formatted="false">당신은 정말 비트 레이트 %2$s 역 %1$s를 제거 하시겠습니까?</string>
+    <string name="rembitrate_remove">제거</string>
+    <string name="rembitrate_cancel">취소</string>
+</resources>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Russian Online Radio</string>
+    
+    <string name="donate_01">Por favor, doe se você gosta russo Online Radio e quer me apoiar!</string>
+    <string name="donate_02">Doar %s</string>
+    <string name="donate_03">Obrigado</string>
+    <string name="donate_04">Ocorreu um erro, por favor, tente novamente</string>
+    
+    <string name="error_server">Serviço não está disponível.\nPara fazer o download da lista de estações que você deve se conectar à Internet.</string>
+    <string name="error_json">Não foi possível analisar o arquivo estações tente novamente.</string>
+    <string name="error_io">Estações de carregamento de erro.\nTente atualizar a estação.</string>
+   
+    <string name="menu_update">Estação de atualização</string>
+    <string name="menu_stop">Parar</string>
+    <string name="menu_rate">Taxa</string>
+    <string name="menu_share">Ação</string>
+    <string name="menu_add">Adicionar estação</string>
+    <string name="menu_donate">Doar</string>
+    
+    <string name="share">Estou ouvindo russo Online Radio no Android. Inscreva-me! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    
+    <string name="divider_fav">Favoritos</string>
+    <string name="divider_rambler">Rambler Radio</string>
+    <string name="divider_own">Meus estações</string>
+    
+    <string name="note_message" formatted="false">%s, %s</string>
+    
+   	<string name="kb_sec_format" formatted="false">%s KBit/seg</string>
+    <string name="kb_sec">KBit/seg</string>
+    
+    <string name="addstation_wrongname">Campo Nome não é válido</string>
+    <string name="addstation_wrongbitrate">Campo Bitrate não é válido</string>
+    <string name="addstation_wrongurl">Campo URL não é válido</string>
+    <string name="addstation_title">Nome da estação</string>
+    <string name="addstation_bitrate">Bitrate</string>
+    <string name="addstation_url">Fluxo de URL</string>
+    <string name="addstation_add">Adicionar</string>
+    <string name="addstation_cancel">Cancelar</string>
+    <string name="addstation_wait">Lista de estações de download primeiro</string>
+    
+    <string name="remstation_title">Removendo estação</string>
+    <string name="remstation_message" formatted="false">Você realmente deseja remover a estação de %s?</string>
+    <string name="remstation_remove">Remover</string>
+    <string name="remstation_cancel">Cancelar</string>
+    
+    <string name="rembitrate_title">Removendo o bitrate</string>
+    <string name="rembitrate_message" formatted="false">Você realmente deseja remover a taxa de bits de %2$s %1$s estação?</string>
+    <string name="rembitrate_remove">Remover</string>
+    <string name="rembitrate_cancel">Cancelar</string>
+</resources>

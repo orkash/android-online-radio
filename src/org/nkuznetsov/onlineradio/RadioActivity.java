@@ -36,6 +36,7 @@ import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -63,7 +64,7 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
-public class RadioActivity extends SherlockActivity implements OnChildClickListener, OnItemLongClickListener
+public class RadioActivity extends SherlockActivity implements OnChildClickListener, OnItemLongClickListener, OnClickListener
 {
     private static final int ACTION_ACTIVITY_START = 0;
     private static final int ACTION_UPDATE_LIST = 1;
@@ -72,6 +73,8 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
     private static final int RESULT_OK_READED = 1;
     private static final int RESULT_OK_DOWNLOADED = 2;
     private static final int RESULT_FAILED = 3;
+    
+    private static final int ID_DONATEFOOTER = -3165;
     
 	private TextView message;
     private ProgressBar progress;
@@ -102,6 +105,14 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
         list.setOnChildClickListener(RadioActivity.this);
 		list.setOnItemLongClickListener(RadioActivity.this);
 		list.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+		
+		// Donate footer
+		TextView donateFooter = (TextView) LayoutInflater.from(this).inflate(android.R.layout.simple_list_item_1, null);
+		donateFooter.setId(ID_DONATEFOOTER);
+		donateFooter.setText(R.string.menu_donate);
+		donateFooter.setOnClickListener(this);
+		donateFooter.setGravity(Gravity.CENTER);
+		list.addFooterView(donateFooter, null, false);
     }
 	
 	@Override
@@ -133,6 +144,16 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 		cancelLoadStations();
 		GA.stopActivity(RadioService.STATE == RadioService.STATE_STOPPED);
 		super.onStop();
+	}
+	
+	@Override
+	public void onClick(View v)
+	{
+		if (v.getId() == ID_DONATEFOOTER)
+		{
+			startActivity(new Intent(this, DonateActivity.class));
+			GA.trackClick("RadioActivity > DonateFooter");
+		}
 	}
 	
 	private static final int MENU_UPDATE = 1;

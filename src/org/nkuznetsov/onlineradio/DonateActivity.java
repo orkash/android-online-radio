@@ -58,6 +58,8 @@ public class DonateActivity extends Activity
 		labelDonate = (TextView) findViewById(R.id.label_donate);
 		
 		bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND"), mServiceConn, Context.BIND_AUTO_CREATE);
+		
+		labelDonate.setVisibility(View.INVISIBLE);
 	}
 	
 	@Override
@@ -82,6 +84,7 @@ public class DonateActivity extends Activity
 	   public void onServiceConnected(ComponentName name, IBinder service) 
 	   {
 	       mService = IInAppBillingService.Stub.asInterface(service);
+	       labelDonate.setVisibility(View.VISIBLE);
 	       new GetSkuTask().execute();
 	   }
 	   
@@ -96,7 +99,8 @@ public class DonateActivity extends Activity
 	public void onDestroy() 
 	{
 	    super.onDestroy();
-	    unbindService(mServiceConn);
+	    if (mServiceConn != null) 
+	    	unbindService(mServiceConn);
 	}
 	
 	@Override
@@ -106,10 +110,24 @@ public class DonateActivity extends Activity
 		{
 			if (resultCode == RESULT_OK) 
 			{
-				Toast.makeText(this, R.string.donate_03, Toast.LENGTH_LONG).show();
-				finish();
+				try
+				{
+					JSONObject json = new JSONObject(data.getStringExtra("INAPP_PURCHASE_DATA"));
+					GA.trackClick("DonateActivity > Success > " + json.optString("productId"));
+					
+					Toast.makeText(this, R.string.donate_03, Toast.LENGTH_LONG).show();
+					finish();
+				}
+				catch (Exception e) 
+				{
+					GA.trackException(e);
+				}
 			}
-			else labelDonate.setText(R.string.donate_04);
+			else 
+			{
+				GA.trackException("DonateActivity > Failure");
+				labelDonate.setText(R.string.donate_04);
+			}
 		}
 	}
 	

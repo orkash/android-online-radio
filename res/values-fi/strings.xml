@@ -29,9 +29,9 @@
    	<string name="kb_sec_format" formatted="false">%s КBit/sec</string>
     <string name="kb_sec">КBit/sec</string>
     
-    <string name="addstation_wrongname">Kentän nimi ei kelpaa</string>
-    <string name="addstation_wrongbitrate">Bitrate alalla ei ole voimassa</string>
-    <string name="addstation_wrongurl">URL kenttä ei ole voimassa</string>
+    <string name="addstation_wrongname">Nimi-kenttä ei kelpaa</string>
+    <string name="addstation_wrongbitrate">Bitrate kenttä ei kelpaa</string>
+    <string name="addstation_wrongurl">URL kenttä ei kelpaa</string>
     <string name="addstation_title">Aseman nimi</string>
     <string name="addstation_bitrate">Bitrate</string>
     <string name="addstation_url">URL stream</string>

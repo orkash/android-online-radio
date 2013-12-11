@@ -861,7 +861,7 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 		@Override
 		public boolean isChildSelectable(int groupPosition, int childPosition) 
 		{
-			return true;
+			return !stations.get(groupPosition).getId().equals(ID_DIVIDER);
 		}
 	}
 	

@@ -17,6 +17,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -25,7 +26,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,12 +49,11 @@ public class DonateActivity extends Activity implements OnItemClickListener
 		skuList.add(DONATE_3);
 	}
 	
-	View progress;
 	ListView listView;
 	ArrayList<Sku> resolvedSkuList = new ArrayList<Sku>();
 	ArrayList<DonateItem> items = new ArrayList<DonateItem>();
 	DonateAdapter donateAdapter;
-	
+	boolean skuLoaded = false;
 	IInAppBillingService mService;
 	
 	@Override
@@ -59,26 +61,19 @@ public class DonateActivity extends Activity implements OnItemClickListener
 	{
 		super.onCreate(savedInstanceState);
 		
-		setContentView(R.layout.activity_donate);
-		
-		progress = findViewById(R.id.progress);
-		listView = (ListView) findViewById(R.id.listview);
+		listView = new ListView(this);
+		setContentView(listView);
 		
 		donateAdapter = new DonateAdapter();
 		listView.setAdapter(donateAdapter);
 		listView.setOnItemClickListener(this);
 		
-		if (bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND"), mServiceConn, Context.BIND_AUTO_CREATE))
+		if (!bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND"), mServiceConn, Context.BIND_AUTO_CREATE))
 		{
-			progress.setVisibility(View.VISIBLE);
-			listView.setVisibility(View.INVISIBLE);
+			skuLoaded = true;
 		}
-		else
-		{
-			progress.setVisibility(View.GONE);
-			listView.setVisibility(View.VISIBLE);
-			refrashDonateItems();
-		}
+		
+		refrashDonateItems();
 	}
 	
 	@Override
@@ -105,22 +100,24 @@ public class DonateActivity extends Activity implements OnItemClickListener
 		
 		items.add(new DonateItem(DonateItem.TYPE_CATEGORY, "Google Play", null));
 		
-		if (resolvedSkuList.size() > 0) for (Sku sku : resolvedSkuList) items.add(new DonateItem(DonateItem.TYPE_PLAY, getString(R.string.donate_02, sku.price), sku.sku));
-		else items.add(new DonateItem(DonateItem.TYPE_ERROR, getString(R.string.donate_06), null));
+		if (skuLoaded)
+		{
+			if (resolvedSkuList.size() > 0) for (Sku sku : resolvedSkuList) items.add(new DonateItem(DonateItem.TYPE_PLAY, getString(R.string.donate_02, sku.price), sku.sku));
+			else items.add(new DonateItem(DonateItem.TYPE_ERROR, getString(R.string.donate_06), null));
+		}
+		else items.add(new DonateItem(DonateItem.TYPE_PROGRESS, null, null));
+		
 		
 		items.add(new DonateItem(DonateItem.TYPE_CATEGORY, "Yandex Money", null));
-		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "0000000000000", null));
+		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "410011713202397", null));
 		
 		items.add(new DonateItem(DonateItem.TYPE_CATEGORY, "Web Money", null));
-		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "R0000000000000", null));
-		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "Z0000000000000", null));
-		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "E0000000000000", null));
-		
-		items.add(new DonateItem(DonateItem.TYPE_CATEGORY, "Qiwi", null));
-		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "9058648217", null));
+		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "R614460012146", null));
+		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "Z176696166281", null));
+		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "E000000000000", null));
 		
 		items.add(new DonateItem(DonateItem.TYPE_CATEGORY, "PayPal", null));
-		items.add(new DonateItem(DonateItem.TYPE_NAVIGATE, "nkuznetsow@gmail.com", "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZLNLUQWLTJ9XE"));
+		items.add(new DonateItem(DonateItem.TYPE_NAVIGATE, getString(R.string.donate_07), "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZLNLUQWLTJ9XE"));
 		
 		donateAdapter.notifyDataSetChanged();
 	}
@@ -172,6 +169,19 @@ public class DonateActivity extends Activity implements OnItemClickListener
 				return view;
 			}
 			
+			if (item.type == DonateItem.TYPE_PROGRESS)
+			{
+				FrameLayout fl = new FrameLayout(DonateActivity.this);
+				TypedValue value = new TypedValue();
+				getTheme().resolveAttribute(android.R.attr.listPreferredItemHeight, value, true);
+				DisplayMetrics metrics = new DisplayMetrics();
+				getWindowManager().getDefaultDisplay().getMetrics(metrics);
+				fl.setMinimumHeight((int)value.getDimension(metrics));
+				ProgressBar progress = new ProgressBar(DonateActivity.this, null, android.R.attr.progressBarStyleSmall);
+				fl.addView(progress, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+				return fl;
+			}
+			
 			if (item.type == DonateItem.TYPE_ERROR)
 			{
 				TextView view = (TextView) inflater.inflate(android.R.layout.simple_list_item_1, null);
@@ -195,7 +205,7 @@ public class DonateActivity extends Activity implements OnItemClickListener
 		public boolean isEnabled(int position)
 		{
 			DonateItem item = getItem(position);
-			return item.type != DonateItem.TYPE_HEADER || item.type != DonateItem.TYPE_CATEGORY;
+			return item.type == DonateItem.TYPE_PLAY || item.type == DonateItem.TYPE_NORMAL || item.type == DonateItem.TYPE_NAVIGATE;
 		}
 	}
 	
@@ -207,6 +217,7 @@ public class DonateActivity extends Activity implements OnItemClickListener
 		static final int TYPE_CATEGORY = 3;
 		static final int TYPE_NAVIGATE = 4;
 		static final int TYPE_ERROR = 5;
+		static final int TYPE_PROGRESS = 6;
 		
 		int type;
 		String text;
@@ -360,9 +371,6 @@ public class DonateActivity extends Activity implements OnItemClickListener
 		@Override
 		protected void onPostExecute(HashMap<String, Sku> skus)
 		{
-			listView.setVisibility(View.VISIBLE);
-			progress.setVisibility(View.GONE);
-			
 			if (skus != null)
 			{
 				for (String mySku : skuList)
@@ -372,6 +380,7 @@ public class DonateActivity extends Activity implements OnItemClickListener
 				}
 			}
 			
+			skuLoaded = true;
 			refrashDonateItems();
 		}
 	}

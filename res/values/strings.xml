@@ -8,6 +8,7 @@
     <string name="donate_04">An error has occurred, please try again</string>
     <string name="donate_05">Account number has been copied to the clipboard</string>
     <string name="donate_06">Failed to retrieve data from Google Play</string>
+    <string name="donate_07">Go to web</string>
     
     <string name="error_server">Service is not available.\nTo download the stations list you must connect to the Internet.</string>
     <string name="error_json">Could not parse file stations try again.</string>

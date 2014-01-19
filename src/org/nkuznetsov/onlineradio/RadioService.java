@@ -1,6 +1,7 @@
 package org.nkuznetsov.onlineradio;
 
-import android.app.Notification;
+import android.annotation.SuppressLint;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -20,6 +21,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -27,6 +29,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 {
 	public final static String ACTION_START = "StartService";
 	public final static String ACTION_STOP = "StopService";
+	public final static String ACTION_USERPAUSE = "PauseService";
 	public final static String EXTRA_STRING_NOTIFICATION = "ExtraNotification";
 	public final static String EXTRA_STRING_URL = "ExtraURL";
 	public final static String EXTRA_STRING_URLISFINAL = "ExtraURLisFinal";
@@ -35,9 +38,17 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	public final static int STATE_STOPPED = 2;
 	public final static int STATE_PREPARING = 3;
 	
+	public final static int STATE_AUTOPAUSED = 4;
+	public final static int STATE_USERPAUSED = 5;
+	
+	public final static int AP_REASON_INTERNET = 1;
+	public final static int AP_REASON_CALL = 2;
+	public final static int AP_REASON_RECONNECT = 3;
+	
 	public static int GROP;
 	public static int CHILD;
 	public static int STATE = STATE_STOPPED;
+	public static int APREASON;
 	public static Runnable stateChangeListener;
 	
 	private static final int NOTIFICATION_ID = 234231;
@@ -50,11 +61,31 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	private ServiceReceiver serviceReceiver;
 	private Intent lastIntent;
 	
+	private PendingIntent mainActivityPendingIntent;
+	private PendingIntent stopPendingIntent;
+	private PendingIntent pausePendingIntent;
+	private String notificationText;
+	
 	@Override
 	public void onCreate() 
 	{
 		super.onCreate();
 		serviceReceiver = new ServiceReceiver();
+		
+		Intent newIntent = new Intent(this, RadioActivity.class);
+		newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		
+		mainActivityPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		
+		newIntent = new Intent(this, RadioService.class);
+		newIntent.setAction(ACTION_STOP);
+		
+		stopPendingIntent = PendingIntent.getService(this, 0, newIntent, 0);
+		
+		newIntent = new Intent(this, RadioService.class);
+		newIntent.setAction(ACTION_USERPAUSE);
+		
+		pausePendingIntent = PendingIntent.getService(this, 0, newIntent, 0);
 	}
 	
 	@Override
@@ -67,6 +98,40 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	{
 		STATE = state;
 		if (stateChangeListener != null) stateChangeListener.run();
+		
+		NotificationCompat.Builder nb = null;
+		
+		if (state == STATE_PREPARING)
+		{
+			nb = getDefaultNotificationBuilder();
+			nb.setContentText("Подключение");
+		}
+		
+		if (state == STATE_STARTED)
+		{
+			nb = getDefaultNotificationBuilder();
+			nb.setContentText("Воспроизведение");
+		}
+		
+		if (state == STATE_AUTOPAUSED) 
+		{
+			nb = getDefaultNotificationBuilder();
+			nb.setContentText(APREASON == AP_REASON_INTERNET ? "Ожидаю подключения к Интернету" : "Ожидаю завершение вызова");
+		}
+		
+		if (state == STATE_USERPAUSED) 
+		{
+			nb = getDefaultNotificationBuilder();
+			nb.setContentText("Пауза");
+		}
+		
+		if (nb != null)
+		{
+			nb.addAction(R.drawable.ic_stop, "Стоп", stopPendingIntent);
+			
+			NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+			nm.notify(NOTIFICATION_ID, nb.build());
+		}
 	}
 	
 	public void registerServiceReceiver()
@@ -80,16 +145,29 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		serviceReceiver.unregister();
 	}
 	
-	@SuppressWarnings("deprecation")
-	private void startForeground(String text)
+	private NotificationCompat.Builder getDefaultNotificationBuilder()
 	{
-		Intent newIntent = new Intent(getApplicationContext(), RadioActivity.class);
-		newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0, newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-		Notification notification = new Notification(R.drawable.icon, text, 0);
-		notification.flags = notification.flags | Notification.FLAG_FOREGROUND_SERVICE;
-		notification.setLatestEventInfo(getApplicationContext(), getString(R.string.app_name), text, pi);
-		startForeground(NOTIFICATION_ID, notification);
+		NotificationCompat.Builder nb = new NotificationCompat.Builder(this);
+		
+		nb.setSmallIcon(R.drawable.icon);
+		
+		nb.setTicker(notificationText);
+		
+		nb.setContentTitle(notificationText);
+		nb.setContentText("");
+		nb.setContentIntent(mainActivityPendingIntent);
+		
+		nb.setOnlyAlertOnce(true);
+		nb.setOngoing(true);
+		nb.setWhen(System.currentTimeMillis());
+		
+		return nb;
+	}
+	
+	@SuppressLint("NewApi")
+	private void startForeground()
+	{
+		startForeground(NOTIFICATION_ID, getDefaultNotificationBuilder().build());
 	}
 	
 	private void lock()
@@ -115,7 +193,13 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
 	}
 	
-	private void stopPlayback()
+	private void stopPlayback(int newState, int apReason)
+	{
+		APREASON = apReason;
+		stopPlayback(newState);
+	}
+	
+	private void stopPlayback(int newState)
 	{
 		timestamp = System.currentTimeMillis();
 		if (mediaPlayer != null)
@@ -123,7 +207,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 			mediaPlayer.release();
 			mediaPlayer = null;
 		}
-		setState(STATE_PREPARING);
+		setState(newState);
 	}
 	
 	@Override
@@ -152,23 +236,31 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 			{
 				lastIntent = intent;
 				timestamp = System.currentTimeMillis();
-				startForeground(intent.getStringExtra(EXTRA_STRING_NOTIFICATION));
+				notificationText = intent.getStringExtra(EXTRA_STRING_NOTIFICATION);
+				startForeground();
 				lock();
 				registerServiceReceiver();
 				if (serviceReceiver.isAllowPlay()) new PrepareAndPlay(intent).start();
-				else stopPlayback();
+				else stopPlayback(STATE_AUTOPAUSED, serviceReceiver.isActiveCall ? AP_REASON_CALL : AP_REASON_INTERNET);
 				return START_STICKY;
+			}
+			
+			if (intent.getAction().equals(ACTION_USERPAUSE))
+			{
+				stopPlayback(STATE_USERPAUSED);
+				unregisterServiceReceiver();
+				unlock();
+				// TODO: set notification
 			}
 			
 			if (intent.getAction().equals(ACTION_STOP))
 			{
 				lastIntent = null;
-				stopPlayback();
+				stopPlayback(STATE_STOPPED);
 				unregisterServiceReceiver();
 				unlock();
 				stopForeground(true);
 				stopSelf();
-				setState(STATE_STOPPED);
 				return START_NOT_STICKY;
 			}
 		}
@@ -237,7 +329,9 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		public void onReceive(Context context, Intent intent) 
 		{
 			if (intent == null || intent.getAction() == null) return;
-	           
+	        
+			if (STATE == STATE_USERPAUSED) return;
+			
             if (intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION))
             {
             	NetworkInfo ni = getActivNetwork();
@@ -246,7 +340,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
             	{
             		if (activeNetwork == null)
             		{
-            			if (ni.isConnected() && !isActiveCall() && STATE == STATE_PREPARING && lastIntent != null)
+            			if (ni.isConnected() && !isActiveCall() && STATE == STATE_AUTOPAUSED && lastIntent != null)
             			{
             				startService(lastIntent);
             				lastIntent = null;
@@ -257,7 +351,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
             			if (activeNetwork.getType() == ni.getType())
             			{
             				if (ni.isConnected() && !activeNetwork.isConnected() && !isActiveCall() && 
-            						STATE == STATE_PREPARING && lastIntent != null)
+            						STATE == STATE_AUTOPAUSED && lastIntent != null)
             				{
                 				startService(lastIntent);
                 				lastIntent = null;
@@ -265,16 +359,19 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
             			}
             			else if (ni.isConnected())
             			{
-            				stopPlayback();
+            				stopPlayback(STATE_AUTOPAUSED, AP_REASON_RECONNECT);
+            				
             				if (!isActiveCall() && lastIntent != null)
             				{
             					startService(lastIntent);
                 				lastIntent = null;
             				}
+            				
+            				// TODO: set reason if active call
             			}
             		}
             	}
-            	else if (activeNetwork != null) stopPlayback();
+            	else if (activeNetwork != null) stopPlayback(STATE_AUTOPAUSED, AP_REASON_INTERNET);
             	
             	activeNetwork = ni;
             }
@@ -285,10 +382,11 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
                 if (isActiveCall == newIsActiveCall) return;
                 isActiveCall = newIsActiveCall;
             
-                if (isActiveCall) stopPlayback();
+                if (isActiveCall) stopPlayback(STATE_AUTOPAUSED, AP_REASON_CALL);
                 else
                 {
-                	if (activeNetwork != null && activeNetwork.isConnected() && STATE == STATE_PREPARING && lastIntent != null)
+                	if (activeNetwork != null && activeNetwork.isConnected() && 
+                			STATE == STATE_AUTOPAUSED && lastIntent != null)
                 	{
                 		startService(lastIntent);
         				lastIntent = null;

@@ -791,7 +791,16 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 					if (RadioService.STATE == RadioService.STATE_PREPARING)
 						holder.progress.setVisibility(View.VISIBLE);
 					if (RadioService.STATE == RadioService.STATE_STARTED)
+					{
 						holder.play.setVisibility(View.VISIBLE);
+						holder.play.setImageResource(R.drawable.ic_play);
+					}
+					if (RadioService.STATE == RadioService.STATE_AUTOPAUSED || 
+							RadioService.STATE == RadioService.STATE_USERPAUSED)
+					{
+						holder.play.setVisibility(View.VISIBLE);
+						holder.play.setImageResource(R.drawable.ic_pause);
+					}
 				}
 			}
 			return convertView;
@@ -822,7 +831,16 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 				if (RadioService.STATE == RadioService.STATE_PREPARING)
 					holder.progress.setVisibility(View.VISIBLE);
 				if (RadioService.STATE == RadioService.STATE_STARTED)
+				{
 					holder.play.setVisibility(View.VISIBLE);
+					holder.play.setImageResource(R.drawable.ic_play);
+				}
+				if (RadioService.STATE == RadioService.STATE_AUTOPAUSED || 
+						RadioService.STATE == RadioService.STATE_USERPAUSED)
+				{
+					holder.play.setVisibility(View.VISIBLE);
+					holder.play.setImageResource(R.drawable.ic_pause);
+				}
 			}
 			
 			return convertView;

@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -24,6 +25,7 @@ import android.os.PowerManager.WakeLock;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.KeyEvent;
 
 public class RadioService extends Service implements OnErrorListener, OnCompletionListener
 {
@@ -59,11 +61,12 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	
 	private long timestamp;
 	private ServiceReceiver serviceReceiver;
+	private MediaButtonReceiver mediaButtonReceiver;
 	private Intent lastIntent;
 	
-	private PendingIntent mainActivityPendingIntent;
-	private PendingIntent stopPendingIntent;
-	private PendingIntent pausePendingIntent;
+	private PendingIntent mainActivityPendingIntent, 
+						stopPendingIntent, pausePendingIntent,
+						startPendingIntent;
 	private String notificationText;
 	
 	@Override
@@ -71,6 +74,9 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	{
 		super.onCreate();
 		serviceReceiver = new ServiceReceiver();
+		
+		mediaButtonReceiver = new MediaButtonReceiver();
+		mediaButtonReceiver.register();
 		
 		Intent newIntent = new Intent(this, RadioActivity.class);
 		newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -86,6 +92,13 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		newIntent.setAction(ACTION_USERPAUSE);
 		
 		pausePendingIntent = PendingIntent.getService(this, 0, newIntent, 0);
+	}
+	
+	@Override
+	public void onDestroy() 
+	{
+		mediaButtonReceiver.unregister();
+		super.onDestroy();
 	}
 	
 	@Override
@@ -105,24 +118,31 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		{
 			nb = getDefaultNotificationBuilder();
 			nb.setContentText("Подключение");
+			nb.setSmallIcon(R.drawable.icon);
+			nb.setProgress(0, 0, true);
 		}
 		
 		if (state == STATE_STARTED)
 		{
 			nb = getDefaultNotificationBuilder();
+			nb.setSmallIcon(R.drawable.ic_play);
 			nb.setContentText("Воспроизведение");
+			nb.addAction(R.drawable.ic_pause, "Пауза", pausePendingIntent);
 		}
 		
 		if (state == STATE_AUTOPAUSED) 
 		{
 			nb = getDefaultNotificationBuilder();
+			nb.setSmallIcon(R.drawable.ic_pause);
 			nb.setContentText(APREASON == AP_REASON_INTERNET ? "Ожидаю подключения к Интернету" : "Ожидаю завершение вызова");
 		}
 		
 		if (state == STATE_USERPAUSED) 
 		{
 			nb = getDefaultNotificationBuilder();
+			nb.setSmallIcon(R.drawable.ic_pause);
 			nb.setContentText("Пауза");
+			nb.addAction(R.drawable.ic_play, "Продолжить", startPendingIntent);
 		}
 		
 		if (nb != null)
@@ -130,8 +150,20 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 			nb.addAction(R.drawable.ic_stop, "Стоп", stopPendingIntent);
 			
 			NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+			nm.cancel(NOTIFICATION_ID);
 			nm.notify(NOTIFICATION_ID, nb.build());
 		}
+		
+		String AVRCP_PLAYSTATE_CHANGED = "com.android.music.playstatechanged";
+		String AVRCP_META_CHANGED = "com.android.music.metachanged";
+
+	    Intent i = new Intent(AVRCP_PLAYSTATE_CHANGED);
+	    i.putExtra("id", Long.valueOf(1));
+	    i.putExtra("artist", "Artist");
+	    i.putExtra("album", "Album");
+	    i.putExtra("track", "Track");
+	    i.putExtra("playing", state == STATE_PREPARING || state == STATE_STARTED);        
+	    sendBroadcast(i);
 	}
 	
 	public void registerServiceReceiver()
@@ -149,7 +181,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	{
 		NotificationCompat.Builder nb = new NotificationCompat.Builder(this);
 		
-		nb.setSmallIcon(R.drawable.icon);
+		nb.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.icon));
 		
 		nb.setTicker(notificationText);
 		
@@ -235,6 +267,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 			if (intent.getAction().equals(ACTION_START))
 			{
 				lastIntent = intent;
+				startPendingIntent = PendingIntent.getService(this, 0, lastIntent, 0);
 				timestamp = System.currentTimeMillis();
 				notificationText = intent.getStringExtra(EXTRA_STRING_NOTIFICATION);
 				startForeground();
@@ -423,6 +456,58 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 				IntentFilter intentFilter = new IntentFilter();
 				intentFilter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
 				intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+				registerReceiver(this, intentFilter);
+			}
+			catch (Exception e) {}
+		}
+		
+		public void unregister()
+		{
+			try
+			{
+				unregisterReceiver(this);
+			}
+			catch (Exception e) {}
+		}
+	}
+	
+	public class MediaButtonReceiver extends BroadcastReceiver 
+	{
+		public void onReceive(Context context, Intent intent) 
+		{
+			if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction()))
+			{
+				KeyEvent key = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+				
+				if (key == null || key.getAction() != KeyEvent.ACTION_UP) return;
+				
+				int code = key.getKeyCode();
+				
+				if (
+						(Build.VERSION.SDK_INT >= 11 && 
+							(code == KeyEvent.KEYCODE_MEDIA_PAUSE || code == KeyEvent.KEYCODE_MEDIA_PLAY)
+						) || 
+						code == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+				{
+					if (RadioService.STATE == STATE_USERPAUSED) startService(lastIntent);
+					else 
+					{
+						try
+						{
+							pausePendingIntent.send();
+						}
+						catch (Exception e) {}
+					}
+				}
+			}
+		}
+	
+		public void register()
+		{
+			try
+			{
+				IntentFilter intentFilter = new IntentFilter();
+				intentFilter.addAction(Intent.ACTION_MEDIA_BUTTON);
 				registerReceiver(this, intentFilter);
 			}
 			catch (Exception e) {}

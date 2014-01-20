@@ -36,13 +36,13 @@
 		android:layout_toLeftOf="@id/item_station_favorite" 
 		android:layout_alignWithParentIfMissing="true"/>
 	
-	<ImageView 
-	    android:src="@drawable/play" 
-		android:layout_height="wrap_content" 
-		android:layout_width="wrap_content" 
-		android:layout_centerVertical="true" 
-		android:id="@+id/item_station_play" 
-		android:layout_toLeftOf="@id/item_station_favorite" 
-		android:layout_alignWithParentIfMissing="true"/>
+	<ImageView
+	    android:id="@+id/item_station_play"
+	    android:layout_width="20dp"
+	    android:layout_height="20dp"
+	    android:layout_alignWithParentIfMissing="true"
+	    android:layout_centerVertical="true"
+	    android:layout_toLeftOf="@id/item_station_favorite"
+	    android:src="@drawable/ic_play" />
 
 </RelativeLayout>

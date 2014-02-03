@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
+import java.nio.channels.IllegalSelectorException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -208,8 +209,30 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 			case MENU_SHARE:
 				Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
 				shareIntent.setType("text/plain");
+				
 				shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.app_name));
-				shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, getString(R.string.share));
+				
+				try
+				{
+					if (RadioService.STATE != RadioService.STATE_STOPPED)
+					{
+						Station station = null;
+						
+						for (int i = 0; i < adapter.getGroupCount(); i ++)
+						{
+							Station s = adapter.getGroup(i);
+							if (s.hashCode() == RadioService.GROP) station = s;
+						}
+
+						shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, getString(R.string.share2, station.getName()));
+					}
+					else throw new IllegalSelectorException();
+				}
+				catch (Exception e) 
+				{
+					shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, getString(R.string.share1));
+				}
+				
 				try
 				{
 					startActivity(Intent.createChooser(shareIntent, getString(R.string.menu_share)));

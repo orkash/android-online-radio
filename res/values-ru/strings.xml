@@ -18,7 +18,16 @@
     <string name="menu_add">Добавить станцию</string>
     <string name="menu_donate">Отблагодарить</string>
     
-    <string name="share">Я слушаю Online Radio на Android. Присоединяйся! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="note_resume">Продолжить</string>
+    <string name="note_pause">Пауза</string>
+    <string name="note_stop">Стоп</string>
+    <string name="note_playing">Воспроизведение</string>
+    <string name="note_wi">Ожидаю подключения к Интернету</string>
+    <string name="note_wc">Ожидаю завершение вызова</string>
+    <string name="note_connecting">Подключение</string>
+    
+    <string name="share1">Я слушаю Online Radio на Android. Рекомендую установить: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share2" formatted="false">Я слушаю %s в приложении Online Radio на Android. Рекомендую установить: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     
     <string name="divider_fav">Отмеченные</string>
     <string name="divider_rambler">Rambler Radio</string>

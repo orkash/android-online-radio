@@ -25,10 +25,13 @@
 		android:layout_height="wrap_content" 
 		android:layout_alignParentRight="true" 
 		android:layout_centerVertical="true"/>
-    <ImageView android:src="@drawable/play" 
-    	android:layout_height="wrap_content" 
-    	android:layout_width="wrap_content" 
-    	android:layout_centerVertical="true" 
-    	android:id="@+id/item_bitrate_play" 
-    	android:layout_alignParentRight="true"/>
+
+    <ImageView
+        android:id="@+id/item_bitrate_play"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_play" />
+
 </RelativeLayout>

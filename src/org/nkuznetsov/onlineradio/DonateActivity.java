@@ -114,7 +114,7 @@ public class DonateActivity extends Activity implements OnItemClickListener
 		items.add(new DonateItem(DonateItem.TYPE_CATEGORY, "Web Money", null));
 		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "R614460012146", null));
 		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "Z176696166281", null));
-		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "E000000000000", null));
+		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "E232412090935", null));
 		
 		items.add(new DonateItem(DonateItem.TYPE_CATEGORY, "PayPal", null));
 		items.add(new DonateItem(DonateItem.TYPE_NAVIGATE, getString(R.string.donate_07), "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZLNLUQWLTJ9XE"));

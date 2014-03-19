@@ -293,11 +293,15 @@ public class DonateActivity extends Activity implements OnItemClickListener
 				clipboard.setPrimaryClip(ClipData.newPlainText(getString(R.string.app_name), item.text));
 			}
 			
+			GA.trackClick("DonateActivity > " + item.text);
+			
 			Toast.makeText(this, R.string.donate_05, Toast.LENGTH_SHORT).show();
 		}
 		
 		if (item.type == DonateItem.TYPE_NAVIGATE)
 		{
+			GA.trackClick("DonateActivity > " + item.text);
+			
 			Intent intent = new Intent(Intent.ACTION_VIEW);
 			intent.setData(Uri.parse((String)item.extra));
 			startActivity(intent);
@@ -326,7 +330,7 @@ public class DonateActivity extends Activity implements OnItemClickListener
 			}
 			else 
 			{
-				GA.trackException("DonateActivity > Failure");
+				GA.trackException("DonateActivity > Failure(" + resultCode + ")");
 				Toast.makeText(this, R.string.donate_04, Toast.LENGTH_LONG).show();
 			}
 		}

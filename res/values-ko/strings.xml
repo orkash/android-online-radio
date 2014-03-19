@@ -2,10 +2,22 @@
 <resources>
     <string name="app_name">Russian Online Radio</string>
     
+    <string name="note_preparing">연결</string>
+    <string name="note_playing">재생</string>
+    <string name="note_pause">중지</string>
+    <string name="note_waitingforconnection">연결 대기 중</string>
+    <string name="note_waitingforcall">통화 종료 대기 중</string>
+    <string name="note_paused">일시 중지</string>
+    <string name="note_play">플레이</string>
+    <string name="note_stop">정지</string>
+    
     <string name="donate_01">러시아어 온라인 라디오와 같은 당신과 저를 지원하려는 경우 기부 해주세요!</string>
     <string name="donate_02">기부 %s</string>
     <string name="donate_03">감사합니다</string>
     <string name="donate_04">오류가 발생했습니다, ​​다시 시도하십시오</string>
+    <string name="donate_05">계좌 번호 클립 보드에 복사 된</string>
+    <string name="donate_06">구글 플레이에서 데이터를 검색하는 데 실패</string>
+    <string name="donate_07">웹으로 이동</string>
     
     <string name="error_server">서비스를 사용할 수 없습니다.\n방송국 목록을 다운로드하려면 인터넷에 연결해야합니다.</string>
     <string name="error_json">파일을 구문 분석 할 수 없습니다 스테이션 다시 시도하십시오.</string>
@@ -18,7 +30,8 @@
     <string name="menu_add">역 추가</string>
     <string name="menu_donate">기부</string>
     
-    <string name="share">나는 안드로이드 러시아어 온라인 라디오를 듣고 있어요. 나에 가입하세요! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share1">나는 안드로이드 러시아어 온라인 라디오를 듣고 있어요. 설치하는 것이 좋습니다 : https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share2" formatted="false">나는 안드로이드 러시아어 온라인 라디오에 %s 를 듣고 있어요. 설치하는 것이 좋습니다 : https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     
     <string name="divider_fav">별표</string>
     <string name="divider_rambler">Rambler Radio</string>

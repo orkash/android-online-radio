@@ -2,10 +2,22 @@
 <resources>
     <string name="app_name">Рускае Онлайн Радыё</string>
     
+    <string name="note_preparing">Падлучэнне</string>
+    <string name="note_playing">Прайграванне</string>
+    <string name="note_pause">Паўза</string>
+    <string name="note_waitingforconnection">Чаканне падлучэння</string>
+    <string name="note_waitingforcall">Чаканне завяршэння выкліку</string>
+    <string name="note_paused">Паўза</string>
+    <string name="note_play">Прайграць</string>
+    <string name="note_stop">Стоп</string>
+    
     <string name="donate_01">Калі Вам падабаецца Рускае Онлайн Радыё вы можаце падтрымаць мяне матэрыяльна!</string>
     <string name="donate_02">Даць %s</string>
     <string name="donate_03">Дзякуй</string>
     <string name="donate_04">Адбылася памылка, паспрабуйце яшчэ раз</string>
+    <string name="donate_05">Нумар рахунку скапіяваны ў буфер абмену</string>
+    <string name="donate_06">Памылка пры атрыманні дадзеных з Google Play</string>
+    <string name="donate_07">Перайсці на сайт</string>
     
     <string name="error_server">Сэрвіс недаступны.\nДля загрузкі спісу станцый падключыцеся да Інтэрнэту.</string>
     <string name="error_json">Не атрымалася прааналізаваць файл станцый, паспрабуйце яшчэ раз.</string>
@@ -18,7 +30,8 @@
     <string name="menu_add">Дадаць станцыю</string>
     <string name="menu_donate">Аддзячыць</string>
     
-    <string name="share">Я слухаю Рускае Онлайн Радыё на Android. Далучайся! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share1">Я слухаю Онлайн Радыё на Android. Рэкамендую ўсталяваць: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share2" formatted="false">Я слухаю %s ў дадатку Онлайн Радыё на Android. Рэкамендую ўсталяваць: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     
     <string name="divider_fav">Адзначаныя</string>
     <string name="divider_rambler">Rambler Radio</string>

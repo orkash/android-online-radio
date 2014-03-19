@@ -60,9 +60,11 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	
 	private long timestamp;
 	private ServiceReceiver serviceReceiver;
-	//private MediaButtonReceiver mediaButtonReceiver;
 	private Intent lastIntent;
 	
+	private PendingIntent mainActivityPendingIntent, 
+						stopPendingIntent, pausePendingIntent,
+						startPendingIntent;
 	private String notificationText;
 	
 	@Override
@@ -71,47 +73,23 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		super.onCreate();
 		serviceReceiver = new ServiceReceiver();
 		
-		//mediaButtonReceiver = new MediaButtonReceiver();
-		//mediaButtonReceiver.register();
-	}
-	
-	private PendingIntent getMainActivityPendingIntent()
-	{
 		Intent newIntent = new Intent(this, RadioActivity.class);
 		newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		
-		return PendingIntent.getActivity(getApplicationContext(), 0, newIntent, 
-				PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_CANCEL_CURRENT);
-	}
-	
-	private PendingIntent getStopPendingIntent()
-	{
-		Intent newIntent = new Intent(this, RadioService.class);
+		mainActivityPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		
+		newIntent = new Intent(this, RadioService.class);
 		newIntent.setAction(ACTION_STOP);
+		newIntent.putExtra("ga", true);
 		
-		return PendingIntent.getService(this, 0, newIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-	}
-	
-	private PendingIntent getPausePendingIntent()
-	{
-		Intent newIntent = new Intent(this, RadioService.class);
+		stopPendingIntent = PendingIntent.getService(this, 0, newIntent, 0);
+		
+		newIntent = new Intent(this, RadioService.class);
 		newIntent.setAction(ACTION_USERPAUSE);
+		newIntent.putExtra("ga", true);
 		
-		return PendingIntent.getService(this, 0, newIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+		pausePendingIntent = PendingIntent.getService(this, 0, newIntent, 0);
 	}
-	
-	private PendingIntent getStartPendingIntent()
-	{
-		return PendingIntent.getService(this, 0, lastIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-	}
-	
-	/*
-	@Override
-	public void onDestroy() 
-	{
-		mediaButtonReceiver.unregister();
-		super.onDestroy();
-	}*/
 	
 	@Override
 	public IBinder onBind(Intent arg0) 
@@ -129,7 +107,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		if (state == STATE_PREPARING)
 		{
 			nb = getDefaultNotificationBuilder();
-			nb.setContentText(getString(R.string.note_connecting));
+			nb.setContentText(getString(R.string.note_preparing));
 			nb.setSmallIcon(R.drawable.icon);
 			nb.setProgress(0, 0, true);
 		}
@@ -139,27 +117,27 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 			nb = getDefaultNotificationBuilder();
 			nb.setSmallIcon(R.drawable.ic_play);
 			nb.setContentText(getString(R.string.note_playing));
-			nb.addAction(R.drawable.ic_pause, getString(R.string.note_pause), getPausePendingIntent());
+			nb.addAction(R.drawable.ic_pause, getString(R.string.note_pause), pausePendingIntent);
 		}
 		
 		if (state == STATE_AUTOPAUSED) 
 		{
 			nb = getDefaultNotificationBuilder();
 			nb.setSmallIcon(R.drawable.ic_pause);
-			nb.setContentText(APREASON == AP_REASON_INTERNET ? getString(R.string.note_wi) : getString(R.string.note_wc));
+			nb.setContentText(APREASON == AP_REASON_INTERNET ? getString(R.string.note_waitingforconnection) : getString(R.string.note_waitingforcall));
 		}
 		
 		if (state == STATE_USERPAUSED) 
 		{
 			nb = getDefaultNotificationBuilder();
 			nb.setSmallIcon(R.drawable.ic_pause);
-			nb.setContentText(getString(R.string.note_pause));
-			nb.addAction(R.drawable.ic_play, getString(R.string.note_resume), getStartPendingIntent());
+			nb.setContentText(getString(R.string.note_paused));
+			nb.addAction(R.drawable.ic_play, getString(R.string.note_play), startPendingIntent);
 		}
 		
 		if (nb != null)
 		{
-			nb.addAction(R.drawable.ic_stop, getString(R.string.note_stop), getStopPendingIntent());
+			nb.addAction(R.drawable.ic_stop, getString(R.string.note_stop), stopPendingIntent);
 			
 			NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 			nm.cancel(NOTIFICATION_ID);
@@ -188,7 +166,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		
 		nb.setContentTitle(notificationText);
 		nb.setContentText("");
-		nb.setContentIntent(getMainActivityPendingIntent());
+		nb.setContentIntent(mainActivityPendingIntent);
 		
 		nb.setOnlyAlertOnce(true);
 		nb.setOngoing(true);
@@ -267,7 +245,15 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		{
 			if (intent.getAction().equals(ACTION_START))
 			{
+				if (intent.getBooleanExtra("ga", false))
+				{
+					GA.trackEvent("RadioService > Start from notification");
+					intent.removeExtra("ga");
+				}
 				lastIntent = intent;
+				Intent newIntent = new Intent(lastIntent);
+				newIntent.putExtra("ga", true);
+				startPendingIntent = PendingIntent.getService(this, 0, newIntent, 0);
 				timestamp = System.currentTimeMillis();
 				notificationText = intent.getStringExtra(EXTRA_STRING_NOTIFICATION);
 				startForeground();
@@ -280,14 +266,19 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 			
 			if (intent.getAction().equals(ACTION_USERPAUSE))
 			{
+				if (intent.getBooleanExtra("ga", false))
+					GA.trackEvent("RadioService > Pause from notification");
+				
 				stopPlayback(STATE_USERPAUSED);
 				unregisterServiceReceiver();
 				unlock();
-				// TODO: set notification
 			}
 			
 			if (intent.getAction().equals(ACTION_STOP))
 			{
+				if (intent.getBooleanExtra("ga", false))
+					GA.trackEvent("RadioService > Stop from notification");
+				
 				lastIntent = null;
 				stopPlayback(STATE_STOPPED);
 				unregisterServiceReceiver();
@@ -470,58 +461,6 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 			catch (Exception e) {}
 		}
 	}
-	/*
-	public class MediaButtonReceiver extends BroadcastReceiver 
-	{
-		public void onReceive(Context context, Intent intent) 
-		{
-			if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction()))
-			{
-				KeyEvent key = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-				
-				if (key == null || key.getAction() != KeyEvent.ACTION_UP) return;
-				
-				int code = key.getKeyCode();
-				
-				if (
-						(Build.VERSION.SDK_INT >= 11 && 
-							(code == KeyEvent.KEYCODE_MEDIA_PAUSE || code == KeyEvent.KEYCODE_MEDIA_PLAY)
-						) || 
-						code == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
-				{
-					if (RadioService.STATE == STATE_USERPAUSED) startService(lastIntent);
-					else 
-					{
-						try
-						{
-							pausePendingIntent.send();
-						}
-						catch (Exception e) {}
-					}
-				}
-			}
-		}
-	
-		public void register()
-		{
-			try
-			{
-				IntentFilter intentFilter = new IntentFilter();
-				intentFilter.addAction(Intent.ACTION_MEDIA_BUTTON);
-				registerReceiver(this, intentFilter);
-			}
-			catch (Exception e) {}
-		}
-		
-		public void unregister()
-		{
-			try
-			{
-				unregisterReceiver(this);
-			}
-			catch (Exception e) {}
-		}
-	}*/
 	
 	public static void stopService(Context context)
 	{

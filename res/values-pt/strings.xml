@@ -2,10 +2,22 @@
 <resources>
     <string name="app_name">Russian Online Radio</string>
     
+    <string name="note_preparing">Conectando</string>
+    <string name="note_playing">Jogando</string>
+    <string name="note_pause">Pausa</string>
+    <string name="note_waitingforconnection">À espera de conexão</string>
+    <string name="note_waitingforcall">À espera de terminação de chamadas</string>
+    <string name="note_paused">Em pausa</string>
+    <string name="note_play">Reprodução</string>
+    <string name="note_stop">Pare</string>
+    
     <string name="donate_01">Por favor, doe se você gosta russo Online Radio e quer me apoiar!</string>
     <string name="donate_02">Doar %s</string>
     <string name="donate_03">Obrigado</string>
     <string name="donate_04">Ocorreu um erro, por favor, tente novamente</string>
+    <string name="donate_05">Número da conta foi copiado para a área de transferência</string>
+    <string name="donate_06">Falha ao recuperar dados do Google Play</string>
+    <string name="donate_07">Ir ao site</string>
     
     <string name="error_server">Serviço não está disponível.\nPara fazer o download da lista de estações que você deve se conectar à Internet.</string>
     <string name="error_json">Não foi possível analisar o arquivo estações tente novamente.</string>
@@ -18,7 +30,8 @@
     <string name="menu_add">Adicionar estação</string>
     <string name="menu_donate">Doar</string>
     
-    <string name="share">Estou ouvindo russo Online Radio no Android. Inscreva-me! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share1">Estou ouvindo Russian Online Radio no Android. Recomendar para instalar: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share2" formatted="false">Estou ouvindo %s no Android Russian Online Radio. Recomendar para instalar: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     
     <string name="divider_fav">Favoritos</string>
     <string name="divider_rambler">Rambler Radio</string>

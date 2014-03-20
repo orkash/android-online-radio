@@ -315,7 +315,7 @@ public class DonateActivity extends Activity implements OnItemClickListener
 	{
 		if (requestCode == 1001) 
 		{
-			if (resultCode == 0) 
+			if (resultCode == RESULT_OK) 
 			{
 				try
 				{
@@ -332,6 +332,7 @@ public class DonateActivity extends Activity implements OnItemClickListener
 			}
 			else 
 			{
+				if (data != null) resultCode = data.getIntExtra("RESPONSE_CODE", resultCode);
 				GA.trackException("DonateActivity > Failure(" + resultCode + ")");
 				Toast.makeText(this, R.string.donate_04, Toast.LENGTH_LONG).show();
 			}

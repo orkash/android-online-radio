@@ -61,6 +61,8 @@ public class DonateActivity extends Activity implements OnItemClickListener
 	{
 		super.onCreate(savedInstanceState);
 		
+		GA.init(this);
+		
 		listView = new ListView(this);
 		setContentView(listView);
 		

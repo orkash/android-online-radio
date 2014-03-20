@@ -567,52 +567,47 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 				File stationsFile = new File(getFilesDir(), SELIALIZE_TO_FILE);
 				File ownFile = new File(getFilesDir(), SELIALIZE_TO_OWNFILE);
 				
+				boolean needDownload = true;
+				
 				if (params[0] == ACTION_UPDATE_LIST) stationsFile.delete();
-				if (stationsFile.exists())
+				else if (stationsFile.exists())
 				{
-					is = new ObjectInputStream(new FileInputStream(stationsFile));
-					stations = (List<Station>) is.readObject();
-					is.close();
-					
-					if (ownFile.exists())
+					try
 					{
-						try
-						{
-							is = new ObjectInputStream(new FileInputStream(ownFile));
-							stations.addAll((List<Station>) is.readObject());
-							is.close();
-						}
-						catch (Exception e)
-						{
-							ownFile.delete();
-						}
-					}
-					
-					what = RESULT_OK_READED;
+						is = new ObjectInputStream(new FileInputStream(stationsFile));
+						stations = (List<Station>) is.readObject();
+						is.close();
+						what = RESULT_OK_READED;
+						needDownload = false;
+					} 
+					catch (Exception e)
+					{
+						GA.trackException(e);
+					}		
 				}
-				else
+				
+				if (needDownload)
 				{
 					stations = API.getStations();
 					os = new ObjectOutputStream(new FileOutputStream(stationsFile));
 					os.writeObject(stations);
 					os.flush();
 					os.close();
-					
-					if (ownFile.exists())
-					{
-						try
-						{
-							is = new ObjectInputStream(new FileInputStream(ownFile));
-							stations.addAll((List<Station>) is.readObject());
-							is.close();
-						}
-						catch (Exception e)
-						{
-							ownFile.delete();
-						}
-					}
-					
 					what = RESULT_OK_DOWNLOADED;
+				}
+				
+				if (ownFile.exists())
+				{
+					try
+					{
+						is = new ObjectInputStream(new FileInputStream(ownFile));
+						stations.addAll((List<Station>) is.readObject());
+						is.close();
+					}
+					catch (Exception e)
+					{
+						ownFile.delete();
+					}
 				}
 				
 				for (Station station : stations) 
@@ -644,7 +639,6 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 				what = RESULT_FAILED;
 				mes = getString(R.string.error_json);
 			}
-			catch (ClassNotFoundException e) {}
 			
 			return null;
 		}
@@ -833,7 +827,8 @@ public class RadioActivity extends SherlockActivity implements OnChildClickListe
 		public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) 
 		{
 			BitrateViewHolder holder;
-			if (convertView != null) holder = (BitrateViewHolder) convertView.getTag();
+			if (convertView != null && convertView.getTag() instanceof BitrateViewHolder) 
+				holder = (BitrateViewHolder) convertView.getTag();
 			else
 			{
 				convertView =  LayoutInflater.from(RadioActivity.this).inflate(R.layout.item_bitrate, null);

@@ -82,13 +82,13 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 		newIntent.setAction(ACTION_STOP);
 		newIntent.putExtra("ga", true);
 		
-		stopPendingIntent = PendingIntent.getService(this, 0, newIntent, 0);
+		stopPendingIntent = PendingIntent.getService(this, 0, newIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 		
 		newIntent = new Intent(this, RadioService.class);
 		newIntent.setAction(ACTION_USERPAUSE);
 		newIntent.putExtra("ga", true);
 		
-		pausePendingIntent = PendingIntent.getService(this, 0, newIntent, 0);
+		pausePendingIntent = PendingIntent.getService(this, 0, newIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 	}
 	
 	@Override
@@ -224,17 +224,31 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 	@Override
 	public void onCompletion(MediaPlayer arg0) 
 	{
-		if (lastIntent != null) startService(lastIntent);
+		if (lastIntent != null && STATE == STATE_STARTED) 
+		{
+			try
+			{
+				startService(lastIntent);
+				return;
+			}
+			catch (Exception e) {}
+		}
+		actionStop();
 	}
 
 	@Override
 	public boolean onError(MediaPlayer arg0, int arg1, int arg2) 
 	{
-		if (lastIntent != null) 
+		if (lastIntent != null && STATE == STATE_STARTED) 
 		{
-			startService(lastIntent);
-			return true;
+			try
+			{
+				startService(lastIntent);
+				return true;
+			}
+			catch (Exception e) {}
 		}
+		actionStop();
 		return false;
 	}
 	
@@ -253,7 +267,7 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 				lastIntent = intent;
 				Intent newIntent = new Intent(lastIntent);
 				newIntent.putExtra("ga", true);
-				startPendingIntent = PendingIntent.getService(this, 0, newIntent, 0);
+				startPendingIntent = PendingIntent.getService(this, 0, newIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 				timestamp = System.currentTimeMillis();
 				notificationText = intent.getStringExtra(EXTRA_STRING_NOTIFICATION);
 				startForeground();
@@ -278,17 +292,21 @@ public class RadioService extends Service implements OnErrorListener, OnCompleti
 			{
 				if (intent.getBooleanExtra("ga", false))
 					GA.trackEvent("RadioService > Stop from notification");
-				
-				lastIntent = null;
-				stopPlayback(STATE_STOPPED);
-				unregisterServiceReceiver();
-				unlock();
-				stopForeground(true);
-				stopSelf();
+				actionStop();
 				return START_NOT_STICKY;
 			}
 		}
 		return START_NOT_STICKY;
+	}
+	
+	private void actionStop()
+	{
+		lastIntent = null;
+		stopPlayback(STATE_STOPPED);
+		unregisterServiceReceiver();
+		unlock();
+		stopForeground(true);
+		stopSelf();
 	}
 	
 	private class PrepareAndPlay extends Thread

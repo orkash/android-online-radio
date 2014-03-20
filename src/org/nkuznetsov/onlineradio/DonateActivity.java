@@ -315,15 +315,15 @@ public class DonateActivity extends Activity implements OnItemClickListener
 	{
 		if (requestCode == 1001) 
 		{
-			if (resultCode == RESULT_OK) 
+			if (resultCode == 0) 
 			{
 				try
 				{
-					JSONObject json = new JSONObject(data.getStringExtra("INAPP_PURCHASE_DATA"));
-					GA.trackClick("DonateActivity > Success > " + json.optString("productId"));
-					
 					Toast.makeText(this, R.string.donate_03, Toast.LENGTH_LONG).show();
 					finish();
+					
+					JSONObject json = new JSONObject(data.getStringExtra("INAPP_PURCHASE_DATA"));
+					GA.trackClick("DonateActivity > Success > " + json.optString("productId"));
 				}
 				catch (Exception e) 
 				{

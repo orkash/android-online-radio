@@ -61,6 +61,8 @@ public class DonateActivity extends Activity implements OnItemClickListener
 	{
 		super.onCreate(savedInstanceState);
 		
+		GA.init(this);
+		
 		listView = new ListView(this);
 		setContentView(listView);
 		
@@ -114,7 +116,7 @@ public class DonateActivity extends Activity implements OnItemClickListener
 		items.add(new DonateItem(DonateItem.TYPE_CATEGORY, "Web Money", null));
 		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "R614460012146", null));
 		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "Z176696166281", null));
-		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "E232412090935", null));
+		items.add(new DonateItem(DonateItem.TYPE_NORMAL, "E000000000000", null));
 		
 		items.add(new DonateItem(DonateItem.TYPE_CATEGORY, "PayPal", null));
 		items.add(new DonateItem(DonateItem.TYPE_NAVIGATE, getString(R.string.donate_07), "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZLNLUQWLTJ9XE"));
@@ -293,11 +295,15 @@ public class DonateActivity extends Activity implements OnItemClickListener
 				clipboard.setPrimaryClip(ClipData.newPlainText(getString(R.string.app_name), item.text));
 			}
 			
+			GA.trackClick("DonateActivity > " + item.text);
+			
 			Toast.makeText(this, R.string.donate_05, Toast.LENGTH_SHORT).show();
 		}
 		
 		if (item.type == DonateItem.TYPE_NAVIGATE)
 		{
+			GA.trackClick("DonateActivity > " + item.text);
+			
 			Intent intent = new Intent(Intent.ACTION_VIEW);
 			intent.setData(Uri.parse((String)item.extra));
 			startActivity(intent);
@@ -326,7 +332,7 @@ public class DonateActivity extends Activity implements OnItemClickListener
 			}
 			else 
 			{
-				GA.trackException("DonateActivity > Failure");
+				GA.trackException("DonateActivity > Failure(" + resultCode + ")");
 				Toast.makeText(this, R.string.donate_04, Toast.LENGTH_LONG).show();
 			}
 		}

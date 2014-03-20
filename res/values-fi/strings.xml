@@ -2,10 +2,22 @@
 <resources>
     <string name="app_name">Russian Online Radio</string>
     
+    <string name="note_preparing">Connecting</string>
+    <string name="note_playing">Playing</string>
+    <string name="note_pause">Tauko</string>
+    <string name="note_waitingforconnection">Odotetaan yhteyttä</string>
+    <string name="note_waitingforcall">Odottaa laskevan liikenteen</string>
+    <string name="note_paused">Keskeytetty</string>
+    <string name="note_play">Play</string>
+    <string name="note_stop">Pysäkki</string>
+    
     <string name="donate_01">Ole hyvä ja lahjoita jos haluat Russian Online Radio ja haluavat tukea minua!</string>
     <string name="donate_02">Lahjoittaa %s</string>
     <string name="donate_03">Kiitos</string>
     <string name="donate_04">Virhe, yritä uudelleen</string>
+    <string name="donate_05">Tilinumero on kopioitu leikepöydälle</string>
+    <string name="donate_06">Epäonnistui hakea tietoja Google Play</string>
+    <string name="donate_07">Siirry web</string>
     
     <string name="error_server">Palvelu ei ole käytettävissä.\nVoit ladata luettelon asemien yhteydessä Internetiin.</string>
     <string name="error_json">Ei voitu jäsentää tiedosto asemat yritä uudelleen.</string>
@@ -18,7 +30,8 @@
     <string name="menu_add">Lisää kanava</string>
     <string name="menu_donate">Lahjoittaa</string>
     
-    <string name="share">Kuuntelen Russian Online Radio Android. Liity jäseneksi! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share1">Kuuntelen Russian Online Radio Android. Suosittelemme asentamaan: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share2" formatted="false">Kuuntelen AAA Android Russian Online Radio. Suosittelemme asentamaan: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     
     <string name="divider_fav">Tähdellä</string>
     <string name="divider_rambler">Rambler Radio</string>

@@ -2,10 +2,22 @@
 <resources>
     <string name="app_name">Russian Online Radio</string>
     
+    <string name="note_preparing">Anschließen</string>
+    <string name="note_playing">Spielend</string>
+    <string name="note_pause">Pause</string>
+    <string name="note_waitingforconnection">Warten auf Verbindung</string>
+    <string name="note_waitingforcall">Warten auf die Anrufzustellung</string>
+    <string name="note_paused">Pause</string>
+    <string name="note_play">Wiedergabe</string>
+    <string name="note_stop">Stopp</string>
+    
     <string name="donate_01">Bitte spenden Sie, wenn Sie Russian Online Radio und wie wollen um mich zu unterstützen!</string>
     <string name="donate_02">Spenden %s</string>
     <string name="donate_03">Danke</string>
     <string name="donate_04">Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut</string>
+    <string name="donate_05">Kontonummer in die Zwischenablage kopiert wurde</string>
+    <string name="donate_06">Daten konnten nicht aus Google Spiel abrufen</string>
+    <string name="donate_07">Zum Web</string>
     
     <string name="error_server">Der Service ist nicht verfügbar.\nUm die Liste der Stationen, die mit dem Internet herunterzuladen.</string>
     <string name="error_json">Datei konnte nicht analysiert werden Stationen noch einmal versuchen.</string>
@@ -18,7 +30,8 @@
     <string name="menu_add">In Station</string>
     <string name="menu_donate">Spenden</string>
     
-    <string name="share">Ich höre Russian Online Radio auf Android. Begleiten Sie mich! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share1">Ich Russian Online Radio hören auf Android. Empfehlen Sie installieren: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share2" formatted="false">Ich bin auf %s hören auf Android Russian Online-Radio. Empfehlen Sie installieren: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
     
     <string name="divider_fav">Favoriten</string>
     <string name="divider_rambler">Rambler Radio</string>

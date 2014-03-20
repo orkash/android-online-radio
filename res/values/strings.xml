@@ -2,6 +2,15 @@
 <resources>
     <string name="app_name">Russian Online Radio</string>
     
+    <string name="note_preparing">Connecting</string>
+    <string name="note_playing">Playing</string>
+    <string name="note_pause">Pause</string>
+    <string name="note_waitingforconnection">Waiting for connection</string>
+    <string name="note_waitingforcall">Waiting for call termination</string>
+    <string name="note_paused">Paused</string>
+    <string name="note_play">Play</string>
+    <string name="note_stop">Stop</string>
+    
     <string name="donate_01">Please donate if you like Russian Online Radio and want to support me!</string>
     <string name="donate_02">Donate %s</string>
     <string name="donate_03">Money sent successfully. Thank you!</string>
@@ -21,8 +30,9 @@
     <string name="menu_add">Add station</string>
     <string name="menu_donate">Donate</string>
     
-    <string name="share">I\'m listening to Russian Online Radio on Android. Join me! https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
-    
+    <string name="share1">I\'m listening to Russian Online Radio on Android. Recommend to install: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+    <string name="share2" formatted="false">I\'m listening to %s on Android Russian Online Radio. Recommend to install: https://play.google.com/store/apps/details?id=org.nkuznetsov.onlineradio</string>
+	
     <string name="divider_fav">Starred</string>
     <string name="divider_rambler">Rambler Radio</string>
     <string name="divider_own">My stations</string>
